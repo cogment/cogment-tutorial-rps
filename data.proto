@@ -1,0 +1,26 @@
+
+syntax = "proto3";
+
+package cogment_demo_rps;
+
+enum Move {
+  ROCK = 0;
+  PAPER = 1;
+  SCISSORS = 2;
+}
+
+message EnvConfig {
+}
+
+message TrialConfig {
+	EnvConfig env_config = 1;
+}
+
+message Observation {
+  int32 p1_score = 1;
+  int32 p2_score = 2;
+}
+
+message Action {
+  Move move = 1;
+}
