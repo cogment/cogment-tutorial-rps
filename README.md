@@ -52,7 +52,7 @@ Build a local docker tag using the following in a locally checked out cogment-py
 docker build -t cogment/cogment-py-sdk:v1.0.0-alpha1 .
 ```
 
-## Useful commands:
+## Usage
 
 Build the project:
 
