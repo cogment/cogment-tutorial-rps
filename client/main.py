@@ -60,8 +60,7 @@ async def main():
         print(f"Trial '{control_session.get_trial_id()}' terminating")
         await control_session.terminate_trial()
 
-    await context.start_trial(TrialConfig(), endpoint="orchestrator:9000", impl=trial_controler)
-    #await context.join_trial(endpoint="orchestrator:9000", trial_id=trial_id, actor_name="human", impl_name="human_player")
+    await context.start_trial(endpoint="orchestrator:9000", impl=trial_controler, trial_config=TrialConfig())
 
 if __name__ == '__main__':
     asyncio.run(main())
