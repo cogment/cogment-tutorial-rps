@@ -8,32 +8,16 @@ This project relies on **v1.0.0-alpha1** of `cogment-orchestrator`, `cogment-cli
 
 ### `cogment-cli`
 
-#### Local binaries
-
-Build local binaries using the following in a locally checked out cogment-cli directory.
+Make sure you retrieve the latest `develop` build
 
 ```
-make release
+docker pull registry.gitlab.com/ai-r/cogment-cli:latest
 ```
 
-This will build the binaries for each platform in `./build` you should then alias `cogment` to the relevant one. e.g.
+Create a `cogment` alias that uses this dockerized version
 
 ```
-alias cogment="$(pwd)/build/cogment-macOS-amd64"
-```
-
-#### Docker build
-
-Build docker iamge using the following in a locally checked out cogment-cli directory.
-
-```
-docker build --tag ai-r/cogment-cli:v1.0.0-alpha1 .
-```
-
-This will build the docker image you can alias it to `cogment` for simpler usage. e.g.
-
-```
-alias cogment="docker run --rm -v$(pwd):/cogment -v/var/run/docker.sock:/var/run/docker.sock ai-r/cogment-cli:v1.0.0-alpha1"
+alias cogment="docker run --rm -v$(pwd):/cogment -v/var/run/docker.sock:/var/run/docker.sock registry.gitlab.com/ai-r/cogment-cli:latest"
 ```
 
 ### `cogment-orchestrator`
@@ -46,7 +30,7 @@ docker pull registry.gitlab.com/ai-r/cogment-orchestrator:latest
 
 ### `cogment-py-sdk`
 
-Build a local docker tag using the following in a locally checked out cogment-py-sdk directory.
+Build a local docker tag using the following in a locally checked out `cogment-py-sdk` directory.
 
 ```
 docker build -t cogment/cogment-py-sdk:v1.0.0-alpha1 .
