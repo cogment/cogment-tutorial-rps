@@ -38,10 +38,10 @@ alias cogment="docker run --rm -v$(pwd):/cogment -v/var/run/docker.sock:/var/run
 
 ### `cogment-orchestrator`
 
-Build a local docker tag using the following in a locally checked out cogment-orchestrator directory.
+Make sure you retrieve the latest `develop` build
 
 ```
-docker build --tag cogment/orchestrator:v1.0.0-alpha1 .
+docker pull registry.gitlab.com/ai-r/cogment-orchestrator:latest
 ```
 
 ### `cogment-py-sdk`
