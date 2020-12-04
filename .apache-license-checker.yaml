@@ -1,0 +1,6 @@
+ignore:
+  - cog_settings.py
+  - "*_pb2.py"
+license:
+    CopyrightYear: 2020
+    Author: "Artificial Intelligence Redefined <dev+cogment@ai-r.com>"

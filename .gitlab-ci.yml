@@ -1,0 +1,8 @@
+stages:
+- lint
+
+apache_licenses_check:
+  stage: lint
+  image: registry.gitlab.com/ai-r/apache-license-checker:latest
+  script:
+    - apache-license-checker
