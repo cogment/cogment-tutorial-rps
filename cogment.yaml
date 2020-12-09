@@ -4,9 +4,13 @@ import:
     - data.proto
 
 commands:
+  generate: >
+    cogment generate --python_dir=./environment &&
+    cogment generate --python_dir=./agents/random &&
+    cogment generate --python_dir=./client
   build: docker-compose build
-  start: docker-compose up orchestrator env agent
-  stop: docker-compose stop orchestrator env agent
+  start: docker-compose up orchestrator environment random_agent
+  stop: docker-compose stop orchestrator environment random_agent
   play: docker-compose run --rm client
 
 environment:
@@ -30,7 +34,7 @@ actor_classes:
 # Dynamic configuration (could be changed by a pre-hook)
 trial_params:
   environment:
-    endpoint: grpc://env:9000
+    endpoint: grpc://environment:9000
   actors:
     # - name: human
     #   actor_class: player
@@ -38,8 +42,8 @@ trial_params:
     - name: machine
       actor_class: player
       implementation: random
-      endpoint: grpc://agent:9000
+      endpoint: grpc://random_agent:9000
     - name: another_machine
       actor_class: player
       implementation: random
-      endpoint: grpc://agent:9000
+      endpoint: grpc://random_agent:9000

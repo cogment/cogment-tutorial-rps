@@ -5,47 +5,31 @@ services:
   grpc-cli:
     image: namely/grpc-cli:1.28_1
 
-  cogment-cli:
-    image: registry.gitlab.com/cogment/cogment/cli
-    volumes:
-      - ./:/app
-
-  agent:
-    image: registry.gitlab.com/change_me/agent
+  random_agent:
     build:
-      context: .
-      dockerfile: agents/agent/Dockerfile
-    volumes:
-      - ./:/app
+      context: random_agent
+      dockerfile: ../py_service.dockerfile
     environment:
       - PYTHONUNBUFFERED=1
 
-  env:
-    image: registry.gitlab.com/change_me/env
+  environment:
     build:
-      context: .
-      dockerfile: envs/Dockerfile
-    volumes:
-      - ./:/app
+      context: environment
+      dockerfile: ../py_service.dockerfile
     environment:
       - PYTHONUNBUFFERED=1
 
   orchestrator:
-    image: registry.gitlab.com/change_me/orchestrator
     build:
       context: .
-      dockerfile: orchestrator/Dockerfile
-    volumes:
-      - .:/app
+      dockerfile: orchestrator.dockerfile
     ports:
       - "9000:9000"
 
   client:
     build:
-      context: .
-      dockerfile: client/Dockerfile
-    volumes:
-      - ./:/app
+      context: client
+      dockerfile: ../py_service.dockerfile
     environment:
       - PYTHONUNBUFFERED=1
     # stdin_open: true

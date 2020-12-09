@@ -4,44 +4,31 @@
 
 ## Dependencies
 
-This project relies on **v1.0.0-alpha1** of `cogment-orchestrator`, `cogment-cli` and `cogment-py-sdk` which haven't been released yet. Local version of those, from their respective `develop` branch, are expected to be available.
-
 ### `cogment-cli`
 
-Make sure you retrieve the latest `develop` build
+#### Binary version
+
+Download the latest release from <https://github.com/cogment/cogment-cli/releases> and add the binary to your `$PATH` as `cogment` or add an alias.
+
+#### Dockerized version
+
+Retrieve the latest release
 
 ```
-docker pull registry.gitlab.com/ai-r/cogment-cli:latest
+docker pull cogment/cli:v1.0.0-alpha1
 ```
 
 Create a `cogment` alias that uses this dockerized version
 
 ```
-alias cogment="docker run --rm -v$(pwd):/cogment -v/var/run/docker.sock:/var/run/docker.sock registry.gitlab.com/ai-r/cogment-cli:latest"
-```
-
-### `cogment-orchestrator`
-
-Make sure you retrieve the latest `develop` build
-
-```
-docker pull registry.gitlab.com/ai-r/cogment-orchestrator:latest
-```
-
-### `cogment-py-sdk`
-
-Build a local docker tag using the following in a locally checked out `cogment-py-sdk` directory.
-
-```
-docker build -t cogment/cogment-py-sdk:v1.0.0-alpha1 .
+alias cogment="docker run --rm -v$(pwd):/cogment -v/var/run/docker.sock:/var/run/docker.sock cogment/cli:v1.0.0-alpha1"
 ```
 
 ## Usage
 
-Build the project:
+Generate protobufs, cog_settings and build the project:
 
 ```
-cogment -v generate --python_dir=.
 cogment run build
 ```
 
