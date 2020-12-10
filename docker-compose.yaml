@@ -32,5 +32,5 @@ services:
       dockerfile: ../py_service.dockerfile
     environment:
       - PYTHONUNBUFFERED=1
-    # stdin_open: true
-    # tty: true
+    stdin_open: true
+    tty: true

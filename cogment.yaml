@@ -36,14 +36,14 @@ trial_params:
   environment:
     endpoint: grpc://environment:9000
   actors:
-    # - name: human
-    #   actor_class: player
-    #   endpoint: client
-    - name: machine
+    - name: player_1
+      actor_class: player
+      # implementation: random
+      # endpoint: grpc://random_agent:9000
+      implementation: human
+      endpoint: client
+    - name: player_2
       actor_class: player
       implementation: random
       endpoint: grpc://random_agent:9000
-    - name: another_machine
-      actor_class: player
-      implementation: random
-      endpoint: grpc://random_agent:9000
+
