@@ -32,9 +32,7 @@ async def environment(environment_session):
     async for event in environment_session.event_loop():
         if "actions" in event:
             [p1, p2] = environment_session.get_active_actors()
-            # TODO this is way too indirect what guarantees I have
-            # the actions are in the same order or that there's a 1-1 mapping?
-            [p1_move, p2_move] = [action.move for action in event["actions"].player]
+            [p1_move, p2_move] = [action.move for action in event["actions"]]
 
             print(f"Player 1 '{p1.actor_name}' played: {MOVES_STR[p1_move]}")
             print(f"Player 2 '{p2.actor_name}' played: {MOVES_STR[p2_move]}")
