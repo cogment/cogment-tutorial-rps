@@ -29,6 +29,7 @@ alias cogment="docker run --rm -v$(pwd):/cogment -v/var/run/docker.sock:/var/run
 Generate protobufs, cog_settings and build the project:
 
 ```
+cogment run generate
 cogment run build
 ```
 
