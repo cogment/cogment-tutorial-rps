@@ -6,7 +6,7 @@ import:
 commands:
   generate: >
     cogment generate --python_dir=./environment &&
-    cogment generate --python_dir=./agents/random &&
+    cogment generate --python_dir=./agents/random_agent &&
     cogment generate --python_dir=./client
   build: docker-compose build
   start: docker-compose up orchestrator environment random_agent
