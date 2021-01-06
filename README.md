@@ -18,11 +18,13 @@ Retrieve the latest release
 docker pull cogment/cli:v1.0.0-alpha1
 ```
 
-Create a `cogment` alias that uses this dockerized version
+If you chose to use the dockerized versin, creating a `cogment` alias makes it way easier. You can run the folliwng to define the alias in your running shell, you can add it to your `.bashrc`, `.zshrc` or similar to keep the alias around.
 
 ```
-alias cogment="docker run --rm -v$(pwd):/cogment -v/var/run/docker.sock:/var/run/docker.sock cogment/cli:v1.0.0-alpha1"
+alias cogment='docker run --rm -v$(pwd):/cogment -v/var/run/docker.sock:/var/run/docker.sock cogment/cli:v1.0.0-alpha1'
 ```
+
+> ⚠️ Take care to use simple quotes to create your alias, i.e. use `alias cogment='...'` for it to work properly.
 
 ## Usage
 
