@@ -27,13 +27,11 @@ def print_observation(observation):
     print(f"🧑 played {MOVES_STR[observation.me.last_round_move]}")
     print(f"🤖 played {MOVES_STR[observation.them.last_round_move]}")
     if observation.me.last_round_win:
-        print(f" -> 🧑 wins the round - 🧑 {observation.me.score} / 🤖 {observation.them.score}")
+        print(f" -> 🧑 wins the round - 🧑 {observation.me.current_game_score} / 🤖 {observation.them.current_game_score}")
     elif observation.them.last_round_win:
-        print(f" -> 🤖 wins the round - 🧑 {observation.me.score} / 🤖 {observation.them.score}")
+        print(f" -> 🤖 wins the round - 🧑 {observation.me.current_game_score} / 🤖 {observation.them.current_game_score}")
     else:
-        print(f" -> it's a draw - 🧑 {observation.me.score} / 🤖 {observation.them.score}")
-
-    print("\n---")
+        print(f" -> it's a draw - 🧑 {observation.me.current_game_score} / 🤖 {observation.them.current_game_score}")
 
 async def main():
     print("Client up and running.")
@@ -43,19 +41,24 @@ async def main():
     future_trial_finished = asyncio.get_running_loop().create_future()
     async def human_player(actor_session):
         nonlocal future_trial_finished
-        game_started = False
 
         actor_session.start()
 
         async for event in actor_session.event_loop():
             if "observation" in event:
-                if not game_started:
-                    print(f"👊 / ✋ / ✌️ game starts!")
-                    game_started = True
-                else:
-                    print_observation(event["observation"])
+                observation = event["observation"]
 
-                move_idx = int(input(f"\nYour turn: {MOVES_PROMPT} ? "))
+                if observation.game_index > 0 or observation.round_index > 0:
+                    # The only time the observation is not relevant is on the first round of the first game
+                    print_observation(observation)
+
+                if observation.round_index == 0:
+                    if observation.game_index > 0:
+                        print(f"\n** Game #{observation.game_index} over! - 🧑 {observation.me.current_game_score} / 🤖 {observation.them.current_game_score} **")
+                    print(f"\n** Game #{observation.game_index + 1} starts! - 🧑 0 / 🤖 0 **")
+
+                print(f"\n-- Round #{observation.round_index + 1} --\n")
+                move_idx = int(input(f"What's your move: {MOVES_PROMPT} ? "))
                 next_action = Action(move=MOVES[move_idx])
                 actor_session.do_action(next_action)
                 print("\n")
@@ -66,8 +69,6 @@ async def main():
                 assert len(final_data.messages) == 0
 
                 print_observation(final_data.observations[0])
-
-        print(f"\nGame over!")
 
         future_trial_finished.set_result(True)
 

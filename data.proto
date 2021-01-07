@@ -24,6 +24,7 @@ enum Move {
 
 message EnvironmentConfig {
   int32 target_score = 1;
+  int32 games_count = 2;
 }
 
 message TrialConfig {
@@ -31,14 +32,16 @@ message TrialConfig {
 }
 
 message PlayerState {
-  int32 score = 1;
+  int32 current_game_score = 1;
   bool last_round_win = 2;
   Move last_round_move = 3;
 }
 
 message Observation {
-  PlayerState me = 1;
-  PlayerState them = 2;
+  int32 game_index = 1;
+  int32 round_index = 2;
+  PlayerState me = 3;
+  PlayerState them = 4;
 }
 
 message Action {
