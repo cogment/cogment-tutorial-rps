@@ -14,7 +14,7 @@ commands:
   play: docker-compose run --rm client
 
 environment:
-  config_type: cogment_demo_rps.EnvConfig
+  config_type: cogment_demo_rps.EnvironmentConfig
 
 trial:
   config_type: cogment_demo_rps.TrialConfig
@@ -35,6 +35,8 @@ actor_classes:
 trial_params:
   environment:
     endpoint: grpc://environment:9000
+    config:
+      target_score: 3
   actors:
     - name: player_1
       actor_class: player

@@ -19,15 +19,14 @@ from data_pb2 import Observation, ROCK, PAPER, SCISSORS
 import asyncio
 
 MOVES_STR = ["👊 rock", "✋ paper", "✌️ scissors"]
-TARGET_SCORE = 3
-
 
 async def environment(environment_session):
     p1_score = 0
     p2_score = 0
+    target_score = environment_session.config.target_score
 
     environment_session.start([("*", Observation(p1_score=p1_score, p2_score=p2_score))])
-    print(f"[Environment] trial {environment_session.get_trial_id()} starts!")
+    print(f"[Environment] trial {environment_session.get_trial_id()} starts, first player to reach {target_score} wins!")
 
     async for event in environment_session.event_loop():
         if "actions" in event:
@@ -48,10 +47,10 @@ async def environment(environment_session):
                 print(f"Player 2 '{p2.actor_name}' wins!")
                 p2_score +=1
 
-            if p1_score >= TARGET_SCORE:
+            if p1_score >= target_score:
                 print(f"Player 1 '{p1.actor_name}' wins the match!")
                 environment_session.end(observations=[("*", Observation(p1_score=p1_score, p2_score=p2_score))])
-            elif p2_score >= TARGET_SCORE:
+            elif p2_score >= target_score:
                 print(f"Player 2 '{p2.actor_name}' wins the match!")
                 environment_session.end(observations=[("*", Observation(p1_score=p1_score, p2_score=p2_score))])
             else:

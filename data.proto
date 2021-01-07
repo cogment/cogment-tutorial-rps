@@ -22,11 +22,12 @@ enum Move {
   SCISSORS = 2;
 }
 
-message EnvConfig {
+message EnvironmentConfig {
+  int32 target_score = 1;
 }
 
 message TrialConfig {
-	EnvConfig env_config = 1;
+	EnvironmentConfig environment_config = 1;
 }
 
 message Observation {
