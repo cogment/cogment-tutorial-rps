@@ -21,8 +21,19 @@ import asyncio
 MOVES = [ROCK, PAPER, SCISSORS]
 MOVES_STR = ["👊 rock", "✋ paper", "✌️ scissors"]
 
-MOVES_PROMPT = ','.join([ f"{name} ({idx})" for idx, name in enumerate(MOVES_STR)])
+MOVES_PROMPT = ', '.join([ f"{name} ({idx})" for idx, name in enumerate(MOVES_STR)])
 
+def print_observation(observation):
+    print(f"🧑 played {MOVES_STR[observation.me.last_round_move]}")
+    print(f"🤖 played {MOVES_STR[observation.them.last_round_move]}")
+    if observation.me.last_round_win:
+        print(f" -> 🧑 wins the round - 🧑 {observation.me.score} / 🤖 {observation.them.score}")
+    elif observation.them.last_round_win:
+        print(f" -> 🤖 wins the round - 🧑 {observation.me.score} / 🤖 {observation.them.score}")
+    else:
+        print(f" -> it's a draw - 🧑 {observation.me.score} / 🤖 {observation.them.score}")
+
+    print("\n---")
 
 async def main():
     print("Client up and running.")
@@ -32,32 +43,32 @@ async def main():
     future_trial_finished = asyncio.get_running_loop().create_future()
     async def human_player(actor_session):
         nonlocal future_trial_finished
-        observation = None
+        game_started = False
 
         actor_session.start()
 
         async for event in actor_session.event_loop():
             if "observation" in event:
-                if not observation:
+                if not game_started:
                     print(f"👊 / ✋ / ✌️ game starts!")
-                    observation = event["observation"]
+                    game_started = True
                 else:
-                    observation = event["observation"]
-                    print(f"🤖 plays {MOVES_STR[observation.them.last_round_move]}")
-                    if observation.me.last_round_win:
-                        print(f"🧑 wins the round - 🧑 {observation.me.score} / 🤖 {observation.them.score}")
-                    elif observation.them.last_round_win:
-                        print(f"🤖 wins the round - 🧑 {observation.me.score} / 🤖 {observation.them.score}")
-                    else:
-                        print(f"it's a draw - 🧑 {observation.me.score} / 🤖 {observation.them.score}")
+                    print_observation(event["observation"])
 
-                print(f"\n---\n")
-                move_idx = int(input(f'Your turn: {MOVES_PROMPT} ? '))
+                move_idx = int(input(f"\nYour turn: {MOVES_PROMPT} ? "))
                 next_action = Action(move=MOVES[move_idx])
                 actor_session.do_action(next_action)
-                print(f"🧑 plays {MOVES_STR[next_action.move]}")
+                print("\n")
+            if "final_data" in event:
+                final_data = event["final_data"]
 
-        print(f"Trial over: 🧑 {observation.me.score} / 🤖 {observation.them.score}")
+                assert len(final_data.observations) == 1
+                assert len(final_data.messages) == 0
+
+                print_observation(final_data.observations[0])
+
+        print(f"\nGame over!")
+
         future_trial_finished.set_result(True)
 
     context.register_actor(
