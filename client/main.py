@@ -32,35 +32,32 @@ async def main():
     future_trial_finished = asyncio.get_running_loop().create_future()
     async def human_player(actor_session):
         nonlocal future_trial_finished
-
-        game_started = False
-        p1_score = 0
-        p2_score = 0
+        observation = None
 
         actor_session.start()
 
         async for event in actor_session.event_loop():
             if "observation" in event:
-                observation = event["observation"]
-                if not game_started:
-                    print(f"Let's play 👊 / ✋ / ✌️!")
-                    game_started=True
-                elif observation.p1_score > p1_score:
-                    p1_score = observation.p1_score
-                    print(f"🧑 wins the round - 🧑 {p1_score} / 🤖 {p2_score}")
-                elif observation.p2_score > p2_score:
-                    p2_score = observation.p2_score
-                    print(f"🤖 wins the round - 🧑 {p1_score} / 🤖 {p2_score}")
+                if not observation:
+                    print(f"👊 / ✋ / ✌️ game starts!")
+                    observation = event["observation"]
                 else:
-                    print(f"it's a draw - 🧑 {p1_score} / 🤖 {p2_score}")
+                    observation = event["observation"]
+                    print(f"🤖 plays {MOVES_STR[observation.them.last_round_move]}")
+                    if observation.me.last_round_win:
+                        print(f"🧑 wins the round - 🧑 {observation.me.score} / 🤖 {observation.them.score}")
+                    elif observation.them.last_round_win:
+                        print(f"🤖 wins the round - 🧑 {observation.me.score} / 🤖 {observation.them.score}")
+                    else:
+                        print(f"it's a draw - 🧑 {observation.me.score} / 🤖 {observation.them.score}")
 
                 print(f"\n---\n")
                 move_idx = int(input(f'Your turn: {MOVES_PROMPT} ? '))
                 next_action = Action(move=MOVES[move_idx])
                 actor_session.do_action(next_action)
-                print(f"You played {MOVES_STR[next_action.move]}")
+                print(f"🧑 plays {MOVES_STR[next_action.move]}")
 
-        print(f"Trial over: 🧑 {p1_score} / 🤖 {p2_score}")
+        print(f"Trial over: 🧑 {observation.me.score} / 🤖 {observation.them.score}")
         future_trial_finished.set_result(True)
 
     context.register_actor(

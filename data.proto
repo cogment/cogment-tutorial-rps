@@ -30,9 +30,15 @@ message TrialConfig {
 	EnvironmentConfig environment_config = 1;
 }
 
+message PlayerState {
+  int32 score = 1;
+  bool last_round_win = 2;
+  Move last_round_move = 3;
+}
+
 message Observation {
-  int32 p1_score = 1;
-  int32 p2_score = 2;
+  PlayerState me = 1;
+  PlayerState them = 2;
 }
 
 message Action {

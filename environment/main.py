@@ -15,17 +15,20 @@
 import cogment
 import cog_settings
 
-from data_pb2 import Observation, ROCK, PAPER, SCISSORS
+from data_pb2 import Observation, PlayerState, ROCK, PAPER, SCISSORS
 import asyncio
 
 MOVES_STR = ["👊 rock", "✋ paper", "✌️ scissors"]
 
 async def environment(environment_session):
-    p1_score = 0
-    p2_score = 0
+    p1_state = PlayerState(score=0, last_round_win=False, last_round_move=None)
+    p2_state = PlayerState(score=0, last_round_win=False, last_round_move=None)
     target_score = environment_session.config.target_score
 
-    environment_session.start([("*", Observation(p1_score=p1_score, p2_score=p2_score))])
+    environment_session.start([
+        ("player_1", Observation(me=p1_state, them=p2_state)),
+        ("player_2", Observation(me=p2_state, them=p1_state))
+    ])
     print(f"[Environment] trial {environment_session.get_trial_id()} starts, first player to reach {target_score} wins!")
 
     async for event in environment_session.event_loop():
@@ -38,23 +41,37 @@ async def environment(environment_session):
 
             if p1_move == p2_move:
                 print('Draw!')
+                p1_state.last_round_win = False
+                p2_state.last_round_win = False
             elif ((p1_move == ROCK and p2_move == SCISSORS) or
                 (p1_move == PAPER and p2_move == ROCK) or
                 (p1_move == SCISSORS and p2_move == PAPER)):
                 print(f"Player 1 '{p1.actor_name}' wins!")
-                p1_score += 1
+                p1_state.score += 1
+                p1_state.last_round_win = True
+                p2_state.last_round_win = False
             else:
                 print(f"Player 2 '{p2.actor_name}' wins!")
-                p2_score +=1
+                p2_state.score += 1
+                p1_state.last_round_win = False
+                p2_state.last_round_win = True
 
-            if p1_score >= target_score:
+            p1_state.last_round_move = p1_move
+            p2_state.last_round_move = p2_move
+
+            observations = [
+                ("player_1", Observation(me=p1_state, them=p2_state)),
+                ("player_2", Observation(me=p2_state, them=p1_state))
+            ]
+
+            if p1_state.score >= target_score:
                 print(f"Player 1 '{p1.actor_name}' wins the match!")
-                environment_session.end(observations=[("*", Observation(p1_score=p1_score, p2_score=p2_score))])
-            elif p2_score >= target_score:
+                environment_session.end(observations=observations)
+            elif p2_state.score >= target_score:
                 print(f"Player 2 '{p2.actor_name}' wins the match!")
-                environment_session.end(observations=[("*", Observation(p1_score=p1_score, p2_score=p2_score))])
+                environment_session.end(observations=observations)
             else:
-                environment_session.produce_observations([("*", Observation(p1_score=p1_score, p2_score=p2_score))])
+                environment_session.produce_observations(observations=observations)
 
     print(f"[Environment] trial {environment_session.get_trial_id()} over")
 
