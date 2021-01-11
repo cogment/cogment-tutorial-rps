@@ -21,7 +21,7 @@ import asyncio
 MOVES = [ROCK, PAPER, SCISSORS]
 MOVES_STR = ["👊 rock", "✋ paper", "✌️ scissors"]
 
-MOVES_PROMPT = ', '.join([ f"{name} ({idx})" for idx, name in enumerate(MOVES_STR)])
+MOVES_PROMPT = ', '.join([ f"{name} ({idx + 1})" for idx, name in enumerate(MOVES_STR)])
 
 def print_observation(observation):
     print(f"🧑 played {MOVES_STR[observation.me.last_round_move]}")
@@ -58,7 +58,7 @@ async def main():
                     print(f"\n** Game #{observation.game_index + 1} starts! - 🧑 0 / 🤖 0 **")
 
                 print(f"\n-- Round #{observation.round_index + 1} --\n")
-                move_idx = int(input(f"What's your move: {MOVES_PROMPT} ? "))
+                move_idx = int(input(f"What's your move: {MOVES_PROMPT} ? ")) - 1
                 next_action = Action(move=MOVES[move_idx])
                 actor_session.do_action(next_action)
                 print("\n")
