@@ -58,8 +58,19 @@ async def main():
                     print(f"\n** Game #{observation.game_index + 1} starts! - 🧑 0 / 🤖 0 **")
 
                 print(f"\n-- Round #{observation.round_index + 1} --\n")
-                move_idx = int(input(f"What's your move: {MOVES_PROMPT} ? ")) - 1
-                next_action = Action(move=MOVES[move_idx])
+                move = None
+                while move is None:
+                    human_input = input(f"What's your move: {MOVES_PROMPT} ? ")
+                    try:
+                        move_idx = int(human_input) - 1
+                        if 0 <= move_idx < len(MOVES):
+                            move=MOVES[move_idx]
+                        else:
+                            print(f"⚠️ Invalid move index '{human_input}'")
+                    except:
+                        print(f"⚠️ Unrecognized input '{human_input}'")
+
+                next_action = Action(move=move)
                 actor_session.do_action(next_action)
                 print("\n")
             if "final_data" in event:
