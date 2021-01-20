@@ -13,11 +13,14 @@
 # limitations under the License.
 
 import cog_settings
-from data_pb2 import PlayerAction
+from data_pb2 import PlayerAction, ROCK, PAPER, SCISSORS
 
 import cogment
 
 import asyncio
+import random
+
+MOVES = [ROCK, PAPER, SCISSORS]
 
 async def random_agent(actor_session):
     actor_session.start()
@@ -26,7 +29,7 @@ async def random_agent(actor_session):
         if "observation" in event:
             observation = event["observation"]
             print(f"'{actor_session.name}' received an observation: '{observation}'")
-            action = PlayerAction()
+            action = PlayerAction(move=random.choice(MOVES))
             actor_session.do_action(action)
         if "reward" in event:
             reward = event["reward"]
