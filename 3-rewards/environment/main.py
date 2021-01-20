@@ -85,12 +85,20 @@ async def environment(environment_session):
                 state["p1"]["current_game_score"] = 0
                 state["p2"]["current_game_score"] = 0
                 state["p1"]["won_games_count"] += 1
+
+                environment_session.add_feedback(value=1, confidence=1, to=[p1.actor_name])
+                environment_session.add_feedback(value=0, confidence=1, to=[p2.actor_name])
+
                 print(f"{p1.actor_name} won game #{state['games_count']}")
             elif state["p2"]["current_game_score"] >= target_game_score:
                 state["games_count"] += 1
                 state["p1"]["current_game_score"] = 0
                 state["p2"]["current_game_score"] = 0
                 state["p2"]["won_games_count"] += 1
+
+                environment_session.add_feedback(value=0, confidence=1, to=[p1.actor_name])
+                environment_session.add_feedback(value=1, confidence=1, to=[p2.actor_name])
+
                 print(f"{p2.actor_name} won game #{state['games_count']}")
 
         if "message" in event:
