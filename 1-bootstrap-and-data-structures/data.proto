@@ -23,6 +23,22 @@ message TrialConfig {
   EnvConfig env_config = 1;
 }
 
-message Observation {}
-message PlayerAction {}
+enum Move {
+  ROCK = 0;
+  PAPER = 1;
+  SCISSORS = 2;
+}
 
+message PlayerState {
+  bool won_last = 2;
+  Move last_move = 3;
+}
+
+message Observation {
+  PlayerState me = 1;
+  PlayerState them = 2;
+}
+
+message PlayerAction {
+  Move move = 1;
+}
