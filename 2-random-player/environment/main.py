@@ -13,42 +13,84 @@
 # limitations under the License.
 
 import cog_settings
-from data_pb2 import Observation
+from data_pb2 import Observation, PlayerState, ROCK, PAPER, SCISSORS
 
 import cogment
 
 import asyncio
 
-async def environment(environment_session):
-    print("environment starting")
-    # Create the initial observaton
-    observation = Observation()
+MOVES_STR = ["👊 rock", "✋ paper", "✌️ scissors"]
 
-    # Start the trial and send that observation to all actors
-    environment_session.start([("*", observation)])
+DEFEATS = {
+    ROCK: PAPER,
+    SCISSORS: ROCK,
+    PAPER: SCISSORS
+}
+
+
+async def environment(environment_session):
+    state = {
+        "rounds_count": 0,
+        "p1": {
+            "won_rounds_count": 0
+        },
+        "p2": {
+            "won_rounds_count": 0
+        },
+    }
+    print("environment starting")
+    [p1, p2] = environment_session.get_active_actors()
+    p1_state = PlayerState(won_last=False, last_move=None)
+    p2_state = PlayerState(won_last=False, last_move=None)
+    environment_session.start([
+        (p1.actor_name, Observation(me=p1_state, them=p2_state)),
+        (p2.actor_name, Observation(me=p2_state, them=p1_state)),
+    ])
 
     async for event in environment_session.event_loop():
-        if "actions" in event:
-            actions = event["actions"]
-            print(f"environment received actions")
-            for actor, action in zip(environment_session.get_active_actors(), actions):
-                print(f" actor '{actor.actor_name}' did action '{action}'")
+        if "actions" in event or "final_actions" in event:
+            is_final = "final_actions" in event
+            [p1_action, p2_action] = event["actions"] if "actions" in event else event["final_actions"]
+            print(f"{p1.actor_name} played {MOVES_STR[p1_action.move]}")
+            print(f"{p2.actor_name} played {MOVES_STR[p2_action.move]}")
 
-            observation = Observation()
-            environment_session.produce_observations([("*", observation)])
+            # Compute who wins, if the two players had the same move, nobody wins
+            p1_state = PlayerState(
+                won_last=p1_action.move == DEFEATS[p2_action.move],
+                last_move=p1_action.move
+            )
+            p2_state = PlayerState(
+                won_last=p2_action.move == DEFEATS[p1_action.move],
+                last_move=p2_action.move
+            )
+            state["rounds_count"] += 1
+            if p1_state.won_last:
+                state["p1"]["won_rounds_count"] += 1
+                print(f"{p1.actor_name} wins!")
+            elif p2_state.won_last:
+                state["p2"]["won_rounds_count"] += 1
+                print(f"{p2.actor_name} wins!")
+            else:
+                print(f"draw.")
+
+            # Generate and send observations
+            observations = [
+                (p1.actor_name, Observation(me=p1_state, them=p2_state)),
+                (p2.actor_name, Observation(me=p2_state, them=p1_state)),
+            ]
+            if is_final:
+                environment_session.end(observations)
+            else:
+                environment_session.produce_observations(observations)
         if "message" in event:
             (sender, message) = event["message"]
             print(f"environment received a message from '{sender}': - '{message}'")
-        if "final_actions" in event:
-            actions = event["final_actions"]
-            print(f"environment received final actions")
-            for actor, action in zip(environment_session.get_active_actors(), actions):
-                print(f" actor '{actor.actor_name}' did action '{action}'")
-
-            observation = Observation()
-            environment_session.end([("*", observation)])
 
     print("environment end")
+    print(f"\t * {state['rounds_count']} rounds played")
+    print(f"\t * {p1.actor_name} won {state['p1']['won_rounds_count']} rounds")
+    print(f"\t * {p2.actor_name} won {state['p2']['won_rounds_count']} rounds")
+    print(f"\t * {state['rounds_count'] - state['p1']['won_rounds_count'] - state['p2']['won_rounds_count']} draws")
 
 async def main():
     print("Environment service starting...")
