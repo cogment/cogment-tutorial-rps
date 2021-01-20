@@ -1,0 +1,43 @@
+import:
+  proto:
+    - data.proto
+
+commands:
+  generate: >
+    cogment generate --python_dir=./environment &&
+    cogment generate --python_dir=./random_agent &&
+    cogment generate --python_dir=./client
+  build: docker-compose build
+  # Start and stop services
+  start: docker-compose up orchestrator environment random-agent
+  stop: docker-compose stop orchestrator environment random-agent
+  client: docker-compose run --rm client
+
+environment:
+  config_type: rps.EnvConfig
+
+trial:
+  config_type: rps.TrialConfig
+
+# Static configuration
+actor_classes:
+  - id: player
+    action:
+      space: rps.PlayerAction
+    observation:
+      space: rps.Observation
+
+# Dynamic configuration (could be changed by a pre-hook)
+trial_params:
+  environment:
+    endpoint: grpc://environment:9000
+    #config: {}
+  actors:
+    - name: player_random_agent_1
+      actor_class: player
+      implementation: random_agent
+      endpoint: grpc://random-agent:9000
+    - name: player_random_agent_2
+      actor_class: player
+      implementation: random_agent
+      endpoint: grpc://random-agent:9000
