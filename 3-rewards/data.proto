@@ -17,6 +17,7 @@ syntax = "proto3";
 package rps;
 
 message EnvConfig {
+  int32 target_game_score = 1;
 }
 
 message TrialConfig {

@@ -29,13 +29,16 @@ DEFEATS = {
 
 
 async def environment(environment_session):
+    target_game_score = environment_session.config.target_game_score
     state = {
-        "rounds_count": 0,
+        "games_count": 0,
         "p1": {
-            "won_rounds_count": 0
+            "won_games_count": 0,
+            "current_game_score": 0
         },
         "p2": {
-            "won_rounds_count": 0
+            "won_games_count": 0,
+            "current_game_score": 0
         },
     }
     print("environment starting")
@@ -51,8 +54,6 @@ async def environment(environment_session):
         if "actions" in event or "final_actions" in event:
             is_final = "final_actions" in event
             [p1_action, p2_action] = event["actions"] if "actions" in event else event["final_actions"]
-            print(f"{p1.actor_name} played {MOVES_STR[p1_action.move]}")
-            print(f"{p2.actor_name} played {MOVES_STR[p2_action.move]}")
 
             # Compute who wins, if the two players had the same move, nobody wins
             p1_state = PlayerState(
@@ -63,15 +64,10 @@ async def environment(environment_session):
                 won_last=p2_action.move == DEFEATS[p1_action.move],
                 last_move=p2_action.move
             )
-            state["rounds_count"] += 1
             if p1_state.won_last:
-                state["p1"]["won_rounds_count"] += 1
-                print(f"{p1.actor_name} wins!")
+                state["p1"]["current_game_score"] += 1
             elif p2_state.won_last:
-                state["p2"]["won_rounds_count"] += 1
-                print(f"{p2.actor_name} wins!")
-            else:
-                print(f"draw.")
+                state["p2"]["current_game_score"] += 1
 
             # Generate and send observations
             observations = [
@@ -82,15 +78,29 @@ async def environment(environment_session):
                 environment_session.end(observations)
             else:
                 environment_session.produce_observations(observations)
+
+            # Update the game scores
+            if state["p1"]["current_game_score"] >= target_game_score:
+                state["games_count"] += 1
+                state["p1"]["current_game_score"] = 0
+                state["p2"]["current_game_score"] = 0
+                state["p1"]["won_games_count"] += 1
+                print(f"{p1.actor_name} won game #{state['games_count']}")
+            elif state["p2"]["current_game_score"] >= target_game_score:
+                state["games_count"] += 1
+                state["p1"]["current_game_score"] = 0
+                state["p2"]["current_game_score"] = 0
+                state["p2"]["won_games_count"] += 1
+                print(f"{p2.actor_name} won game #{state['games_count']}")
+
         if "message" in event:
             (sender, message) = event["message"]
             print(f"environment received a message from '{sender}': - '{message}'")
 
     print("environment end")
-    print(f"\t * {state['rounds_count']} rounds played")
-    print(f"\t * {p1.actor_name} won {state['p1']['won_rounds_count']} rounds")
-    print(f"\t * {p2.actor_name} won {state['p2']['won_rounds_count']} rounds")
-    print(f"\t * {state['rounds_count'] - state['p1']['won_rounds_count'] - state['p2']['won_rounds_count']} draws")
+    print(f"\t * {state['games_count']} games played")
+    print(f"\t * {p1.actor_name} won {state['p1']['won_games_count']} games")
+    print(f"\t * {p2.actor_name} won {state['p2']['won_games_count']} games")
 
 async def main():
     print("Environment service starting...")
