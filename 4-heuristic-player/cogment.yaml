@@ -34,11 +34,11 @@ trial_params:
     config:
       target_game_score: 2
   actors:
-    - name: player_random_agent_1
+    - name: player_1
       actor_class: player
       implementation: random_agent
       endpoint: grpc://random-agent:9000
-    - name: player_random_agent_2
+    - name: player_2
       actor_class: player
-      implementation: random_agent
+      implementation: heuristic_agent
       endpoint: grpc://random-agent:9000
