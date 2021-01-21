@@ -1,50 +1,49 @@
-# Cogment "Rock Paper Scissors" demo
+# Cogment "Rock Paper Scissors" (RPS) tutorial
 
-🚧
+> ⚠️ 🚧 This is part of an upcoming release of cogment and still unstable.
+>
+> Current stable version can be found at <https://gitlab.com/cogment/cogment>
+
+## Introduction
+
+The Cogment framework is a high-efficiency, open source framework designed to enable the training of models in environments where humans and agents interact with the environment and each other continuously. It’s capable of distributed, multi-agent, multi-model training.
+
+This repository includes the sources of the different steps of the Cogment RPS tutorial, detailed instructions are available at [docs.cogment.ai](https://docs.cogment.ai/).
+
+## The steps
+
+- [Step 1: Bootstrap the RPS project and define observation & action space data structures](./1-bootstrap-and-data-structures)
+- [Step 2: Implement a first actor and environment](./2-random-player)
+- [Step 3: Send & receive rewards](./3-rewards)
+- [Step 4: Add a second actor implementation based on a heuristic](./4-heuristic-player)
+- [Step 5: Add a human player in the loop](./5-human-player)
+- 🚧 [Step 6: Implement a web client for the human player](./6-web-client)
 
 ## Dependencies
 
-### `cogment-cli`
-
-#### Binary version
-
-Download the latest release from <https://github.com/cogment/cogment-cli/releases> and add the binary to your `$PATH` as `cogment` or add an alias.
-
-#### Dockerized version
-
-Retrieve the latest release
-
-```
-docker pull cogment/cli:v1.0.0-alpha1
-```
-
-If you chose to use the dockerized versin, creating a `cogment` alias makes it way easier. You can run the folliwng to define the alias in your running shell, you can add it to your `.bashrc`, `.zshrc` or similar to keep the alias around.
-
-```
-alias cogment='docker run --rm -v$(pwd):/cogment -v/var/run/docker.sock:/var/run/docker.sock cogment/cli:v1.0.0-alpha1'
-```
-
-> ⚠️ Take care to use simple quotes to create your alias, i.e. use `alias cogment='...'` for it to work properly.
+The tutorial requires a working installation of the **Cogment cli** as well as a working **docker** implementation.
 
 ## Usage
 
-Generate protobufs, cog_settings and build the project:
+From each of the step's directory you can run the following.
+
+Run the code generation phase and build the project using
 
 ```
 cogment run generate
 cogment run build
 ```
 
-Launch the environment, agents and orchestrator:
+Then launch the environment, agents and orchestrator services:
 
 ```
 cogment run start
 ```
 
-Trigger a trial and play RPS:
+And in a separate trigger a trial:
 
 ```
-cogment run play
+cogment run client
 ```
 
 Or, if you want a web client:
