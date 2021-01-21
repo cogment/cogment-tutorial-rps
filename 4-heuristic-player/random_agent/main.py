@@ -47,6 +47,12 @@ async def random_agent(actor_session):
                 (sender, message) = message
                 print(f"'{actor_session.name}' received a final message from '{sender}': - '{message}'")
 
+DEFEATS = {
+    ROCK: PAPER,
+    SCISSORS: ROCK,
+    PAPER: SCISSORS
+}
+
 async def heuristic_agent(actor_session):
     actor_session.start()
 
@@ -54,8 +60,15 @@ async def heuristic_agent(actor_session):
         if "observation" in event:
             observation = event["observation"]
             print(f"'{actor_session.name}' received an observation: '{observation}'")
-            action = PlayerAction(move=random.choice(MOVES))
-            actor_session.do_action(action)
+            if observation.me.won_last:
+                # I won the last round, let's play the same thing
+                actor_session.do_action(PlayerAction(move=observation.me.last_move))
+            elif observation.them.won_last:
+                # I lost the last round, let's play what would have won
+                actor_session.do_action(PlayerAction(move=DEFEATS[observation.them.last_move]))
+            else:
+                # last round was a draw, let's play randomly
+                actor_session.do_action(PlayerAction(move=random.choice(MOVES)))
         if "reward" in event:
             reward = event["reward"]
             print(f"{actor_session.name} received a reward for tick #{reward.tick_id}: {reward.value}/{reward.confidence}")
