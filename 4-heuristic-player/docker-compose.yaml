@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+  grpc-cli:
+    image: namely/grpc-cli:1.28_1
+  random-agent:
+    build:
+      context: random_agent
+      dockerfile: ../py_service.dockerfile
+    environment:
+      - COGMENT_GRPC_REFLECTION=1
+      - PYTHONUNBUFFERED=1
+
+
+  environment:
+    build:
+      context: environment
+      dockerfile: ../py_service.dockerfile
+    environment:
+      - COGMENT_GRPC_REFLECTION=1
+      - PYTHONUNBUFFERED=1
+
+  orchestrator:
+    build:
+      context: .
+      dockerfile: orchestrator.dockerfile
+    ports:
+      - "9000:9000"
+
+  client:
+    build:
+      context: client
+      dockerfile: ../py_service.dockerfile
+    environment:
+      - PYTHONUNBUFFERED=1
+    stdin_open: true
+    tty: true
