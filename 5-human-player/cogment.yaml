@@ -37,8 +37,9 @@ trial_params:
   actors:
     - name: player_1
       actor_class: player
-      implementation: random_agent
-      endpoint: grpc://random-agent:9000
+      endpoint: client
+      # implementation: random_agent
+      # endpoint: grpc://random-agent:9000
     - name: player_2
       actor_class: player
       implementation: heuristic_agent
