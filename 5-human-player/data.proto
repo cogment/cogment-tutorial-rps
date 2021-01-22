@@ -18,6 +18,7 @@ package rps;
 
 message EnvConfig {
   int32 target_game_score = 1;
+  int32 target_games_count = 2;
 }
 
 message TrialConfig {

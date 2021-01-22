@@ -74,10 +74,6 @@ async def environment(environment_session):
                 (p1.actor_name, Observation(me=p1_state, them=p2_state)),
                 (p2.actor_name, Observation(me=p2_state, them=p1_state)),
             ]
-            if is_final:
-                environment_session.end(observations)
-            else:
-                environment_session.produce_observations(observations)
 
             # Update the game scores
             if state["p1"]["current_game_score"] >= target_game_score:
@@ -100,6 +96,11 @@ async def environment(environment_session):
                 environment_session.add_feedback(value=1, confidence=1, to=[p2.actor_name])
 
                 print(f"{p2.actor_name} won game #{state['games_count']}")
+
+            if is_final or state["games_count"]>=environment_session.config.target_games_count:
+                environment_session.end(observations)
+            else:
+                environment_session.produce_observations(observations)
 
         if "message" in event:
             (sender, message) = event["message"]
