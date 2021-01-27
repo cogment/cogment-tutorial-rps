@@ -7,11 +7,21 @@ commands:
   generate: >
     cogment generate --python_dir=./environment &&
     cogment generate --python_dir=./random_agent &&
-    cogment generate --python_dir=./client
-  build: docker-compose build
+    cogment generate --python_dir=./client --js_dir=web-client/src
+  build: docker-compose build orchestrator environment random_agent
   start: docker-compose up orchestrator environment random_agent
-  stop: docker-compose stop orchestrator environment random_agent
+  refresh-web-client: |
+    docker-compose build web-client
+    cogment run start-web-client
+  build-web-client: |
+    cd web-client
+    npm i
+    cd ..
+    docker-compose build web-client grpcwebproxy
+  start-web-client: docker-compose up web-client grpcwebproxy
+  stop: docker-compose stop orchestrator environment random_agent web-client
   play: docker-compose run --rm client
+  tail: docker-compose logs -f
 
 environment:
   config_type: cogment_demo_rps.EnvironmentConfig
@@ -49,4 +59,3 @@ trial_params:
       actor_class: player
       implementation: random
       endpoint: grpc://random_agent:9000
-

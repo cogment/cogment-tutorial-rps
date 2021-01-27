@@ -46,3 +46,18 @@ Trigger a trial and play RPS:
 ```
 cogment run play
 ```
+
+Or, if you want a web client:
+
+1. Create a file under the folder `web-client` called `.npmrc`
+2. Place the following text inside that file
+```
+@ai-r:registry=https://gitlab.com/api/v4/projects/22532182/packages/npm/
+//gitlab.com/api/v4/projects/22532182/packages/npm/:_authToken=SOME_AUTH_TOKEN_REPLACE_ME
+```
+3. Replace `SOME_AUTH_TOKEN_REPLACE_ME` with your project auth token for `cogment-js-sdk`
+4. Run
+```
+cogment run build-web-client
+cogment run start-web-client
+```

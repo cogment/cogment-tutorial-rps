@@ -34,3 +34,24 @@ services:
       - PYTHONUNBUFFERED=1
     stdin_open: true
     tty: true
+
+  web-client:
+    volumes:
+      - ./web-client:/app
+    build:
+      context: web-client
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_APP_VERSION=dev
+    stdin_open: true
+    ports:
+      - "3000:3000"
+
+  grpcwebproxy:
+    build:
+      context: ./grpcwebproxy
+    restart: on-failure
+    ports:
+      - "8080:8080"
