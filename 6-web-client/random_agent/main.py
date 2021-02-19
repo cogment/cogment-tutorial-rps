@@ -45,7 +45,7 @@ async def main():
         impl_name="random",
         actor_classes=["player"])
 
-    await context.serve_all_registered(port=9000)
+    await context.serve_all_registered(cogment.ServedEndpoint(port=9000))
 
 if __name__ == '__main__':
     asyncio.run(main())

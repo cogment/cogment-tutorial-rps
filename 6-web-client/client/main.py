@@ -98,10 +98,10 @@ async def main():
         print(f"Trial '{control_session.get_trial_id()}' terminating")
         await control_session.terminate_trial()
 
-    trial = asyncio.create_task(context.start_trial(endpoint="orchestrator:9000", impl=trial_controler, trial_config=TrialConfig()))
+    trial = asyncio.create_task(context.start_trial(endpoint=cogment.Endpoint("orchestrator:9000"), impl=trial_controler, trial_config=TrialConfig()))
     trial_id = await future_trial_id
     # Join the trial as a human player
-    await context.join_trial(trial_id=trial_id, endpoint="orchestrator:9000", impl_name="human")
+    await context.join_trial(trial_id=trial_id, endpoint=cogment.Endpoint("orchestrator:9000"), impl_name="human")
     # Wait for the trial to be finished (well not really but didn't find a good way)
     # await asyncio.sleep(10)
     # future_trial_finished.set_result(True)

@@ -35,3 +35,20 @@ services:
       - PYTHONUNBUFFERED=1
     stdin_open: true
     tty: true
+
+  dashboard:
+    image: cogment/dashboard:latest
+    ports:
+      - 3003:3000/tcp
+    depends_on:
+      - metrics
+
+  metrics:
+    image: cogment/metrics:latest
+    user: 0:0
+    command: --config.file=/etc/prometheus/prometheus.yml --log.level=error
+    volumes:
+      - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./metrics/data:/prometheus
+    ports:
+      - 9090:9090/tcp

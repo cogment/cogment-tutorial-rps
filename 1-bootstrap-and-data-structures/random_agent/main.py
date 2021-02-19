@@ -30,7 +30,7 @@ async def random_agent(actor_session):
             actor_session.do_action(action)
         if "reward" in event:
             reward = event["reward"]
-            print(f"'{actor_session.name}' received a reward for tick #{reward.tick_id}: {reward.value}/{reward.confidence}")
+            print(f"'{actor_session.name}' received a reward for tick #{reward.tick_id}: {reward.value}")
         if "message" in event:
             (sender, message) = event["message"]
             print(f"'{actor_session.name}' received a message from '{sender}': - '{message}'")
@@ -39,7 +39,7 @@ async def random_agent(actor_session):
             for observation in final_data.observations:
                 print(f"'{actor_session.name}' received a final observation: '{observation}'")
             for reward in final_data.rewards:
-                print(f"'{actor_session.name}' received a final reward for tick #{reward.tick_id}: {reward.value}/{reward.confidence}")
+                print(f"'{actor_session.name}' received a final reward for tick #{reward.tick_id}: {reward.value}")
             for message in final_data.messages:
                 (sender, message) = message
                 print(f"'{actor_session.name}' received a final message from '{sender}': - '{message}'")
@@ -52,7 +52,7 @@ async def main():
         impl_name="random_agent",
         actor_classes=["player",])
 
-    await context.serve_all_registered(port=9000)
+    await context.serve_all_registered(cogment.ServedEndpoint(port=9000))
 
 if __name__ == '__main__':
     asyncio.run(main())
