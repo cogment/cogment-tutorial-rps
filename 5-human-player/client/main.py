@@ -47,35 +47,31 @@ async def main():
                 print(f" -> round #{round_index + 1} is a draw")
 
         async for event in actor_session.event_loop():
-            if "observation" in event:
-                observation = event["observation"]
+            if event.observation:
+                observation = event.observation
 
                 if round_index > 0:
                     # The only time the observation is not relevant is on the first round of the first game
                     print_observation(observation)
 
-                print(f"\n-- Round #{round_index + 1} --\n")
-                move = None
-                while move is None:
-                    human_input = input(f"What's your move: {MOVES_PROMPT} ? ")
-                    try:
-                        move_idx = int(human_input) - 1
-                        if 0 <= move_idx < len(MOVES):
-                            move=MOVES[move_idx]
-                        else:
-                            print(f"⚠️ Invalid move index '{human_input}'")
-                    except:
-                        print(f"⚠️ Unrecognized input '{human_input}'")
+                if event.type == cogment.EventType.ACTIVE:
+                    # Only play when the trial is active
+                    print(f"\n-- Round #{round_index + 1} --\n")
+                    move = None
+                    while move is None:
+                        human_input = input(f"What's your move: {MOVES_PROMPT} ? ")
+                        try:
+                            move_idx = int(human_input) - 1
+                            if 0 <= move_idx < len(MOVES):
+                                move=MOVES[move_idx]
+                            else:
+                                print(f"⚠️ Invalid move index '{human_input}'")
+                        except:
+                            print(f"⚠️ Unrecognized input '{human_input}'")
 
-                next_action = PlayerAction(move=move)
-                actor_session.do_action(next_action)
-                print("\n")
-                round_index += 1
-            if "final_data" in event:
-                final_data = event["final_data"]
-
-                for observation in final_data.observations:
-                    print_observation(observation)
+                    next_action = PlayerAction(move=move)
+                    actor_session.do_action(next_action)
+                    print("\n")
                     round_index += 1
 
         trial_finished.set_result(True)

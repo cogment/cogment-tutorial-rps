@@ -51,9 +51,8 @@ async def environment(environment_session):
     ])
 
     async for event in environment_session.event_loop():
-        if "actions" in event or "final_actions" in event:
-            is_final = "final_actions" in event
-            [p1_action, p2_action] = event["actions"] if "actions" in event else event["final_actions"]
+        if event.actions:
+            [p1_action, p2_action] = event.actions
 
             # Compute who wins, if the two players had the same move, nobody wins
             p1_state = PlayerState(
@@ -83,7 +82,7 @@ async def environment(environment_session):
                 state["p1"]["won_games_count"] += 1
 
                 environment_session.add_reward(value=1, confidence=1, to=[p1.actor_name])
-                environment_session.add_reward(value=0, confidence=1, to=[p2.actor_name])
+                environment_session.add_reward(value=-1, confidence=1, to=[p2.actor_name])
 
                 print(f"{p1.actor_name} won game #{state['games_count']}")
             elif state["p2"]["current_game_score"] >= target_game_score:
@@ -92,19 +91,20 @@ async def environment(environment_session):
                 state["p2"]["current_game_score"] = 0
                 state["p2"]["won_games_count"] += 1
 
-                environment_session.add_reward(value=0, confidence=1, to=[p1.actor_name])
+                environment_session.add_reward(value=-1, confidence=1, to=[p1.actor_name])
                 environment_session.add_reward(value=1, confidence=1, to=[p2.actor_name])
 
                 print(f"{p2.actor_name} won game #{state['games_count']}")
 
-            if is_final or state["games_count"]>=environment_session.config.target_games_count:
-                environment_session.end(observations)
-            else:
+            if event.type == cogment.EventType.ACTIVE and state["games_count"]<environment_session.config.target_games_count:
+                # The trial is active
                 environment_session.produce_observations(observations)
+            else:
+                # The trial termination has been requested
+                environment_session.end(observations)
 
-        if "message" in event:
-            (sender, message) = event["message"]
-            print(f"environment received a message from '{sender}': - '{message}'")
+        for message in event.messages:
+            print(f"environment received a message from '{message.sender_name}': - '{message.payload}'")
 
     print("environment end")
     print(f"\t * {state['games_count']} games played")
@@ -118,7 +118,7 @@ async def main():
 
     context.register_environment(impl=environment)
 
-    await context.serve_all_registered(cogment.ServedEndpoint(port=9000), prometheus_port=8000)
+    await context.serve_all_registered(cogment.ServedEndpoint(port=9000))
 
 if __name__ == '__main__':
     asyncio.run(main())

@@ -51,9 +51,8 @@ async def environment(environment_session):
     ])
 
     async for event in environment_session.event_loop():
-        if "actions" in event or "final_actions" in event:
-            is_final = "final_actions" in event
-            [p1_action, p2_action] = event["actions"] if "actions" in event else event["final_actions"]
+        if event.actions:
+            [p1_action, p2_action] = event.actions
 
             # Compute who wins, if the two players had the same move, nobody wins
             p1_state = PlayerState(
@@ -66,26 +65,20 @@ async def environment(environment_session):
             )
             if p1_state.won_last:
                 state["p1"]["current_game_score"] += 1
-                environment_session.add_reward(value=1, confidence=1, to=[p1.actor_name])
-                environment_session.add_reward(value=-1, confidence=1, to=[p2.actor_name])
-
             elif p2_state.won_last:
                 state["p2"]["current_game_score"] += 1
-                environment_session.add_reward(value=-1, confidence=1, to=[p1.actor_name])
-                environment_session.add_reward(value=1, confidence=1, to=[p2.actor_name])
-            else:
-                environment_session.add_reward(value=0, confidence=1, to=[p1.actor_name])
-                environment_session.add_reward(value=0, confidence=1, to=[p2.actor_name])
 
             # Generate and send observations
             observations = [
                 (p1.actor_name, Observation(me=p1_state, them=p2_state)),
                 (p2.actor_name, Observation(me=p2_state, them=p1_state)),
             ]
-            if is_final:
-                environment_session.end(observations)
-            else:
+            if event.type == cogment.EventType.ACTIVE:
+                # The trial is active
                 environment_session.produce_observations(observations)
+            else:
+                # The trial termination has been requested
+                environment_session.end(observations)
 
             # Update the game scores
             if state["p1"]["current_game_score"] >= target_game_score:
@@ -94,8 +87,8 @@ async def environment(environment_session):
                 state["p2"]["current_game_score"] = 0
                 state["p1"]["won_games_count"] += 1
 
-                environment_session.add_reward(value=10, confidence=1, to=[p1.actor_name])
-                environment_session.add_reward(value=-10, confidence=1, to=[p2.actor_name])
+                environment_session.add_reward(value=1, confidence=1, to=[p1.actor_name])
+                environment_session.add_reward(value=-1, confidence=1, to=[p2.actor_name])
 
                 print(f"{p1.actor_name} won game #{state['games_count']}")
             elif state["p2"]["current_game_score"] >= target_game_score:
@@ -104,14 +97,13 @@ async def environment(environment_session):
                 state["p2"]["current_game_score"] = 0
                 state["p2"]["won_games_count"] += 1
 
-                environment_session.add_reward(value=-10, confidence=1, to=[p1.actor_name])
-                environment_session.add_reward(value=10, confidence=1, to=[p2.actor_name])
+                environment_session.add_reward(value=-1, confidence=1, to=[p1.actor_name])
+                environment_session.add_reward(value=1, confidence=1, to=[p2.actor_name])
 
                 print(f"{p2.actor_name} won game #{state['games_count']}")
 
-        if "message" in event:
-            (sender, message) = event["message"]
-            print(f"environment received a message from '{sender}': - '{message}'")
+        for message in event.messages:
+            print(f"environment received a message from '{message.sender_name}': - '{message.payload}'")
 
     print("environment end")
     print(f"\t * {state['games_count']} games played")

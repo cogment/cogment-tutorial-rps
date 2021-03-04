@@ -5,7 +5,7 @@ data_pb2.py
 cog_settings.py
 
 # Metrics
-metrics/data
+**/metrics/data
 
 # Js sdk
 web-client

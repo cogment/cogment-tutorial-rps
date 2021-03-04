@@ -48,9 +48,8 @@ async def environment(environment_session):
     ])
 
     async for event in environment_session.event_loop():
-        if "actions" in event or "final_actions" in event:
-            is_final = "final_actions" in event
-            [p1_action, p2_action] = event["actions"] if "actions" in event else event["final_actions"]
+        if event.actions:
+            [p1_action, p2_action] = event.actions
             print(f"{p1.actor_name} played {MOVES_STR[p1_action.move]}")
             print(f"{p2.actor_name} played {MOVES_STR[p2_action.move]}")
 
@@ -78,13 +77,14 @@ async def environment(environment_session):
                 (p1.actor_name, Observation(me=p1_state, them=p2_state)),
                 (p2.actor_name, Observation(me=p2_state, them=p1_state)),
             ]
-            if is_final:
-                environment_session.end(observations)
-            else:
+            if event.type == cogment.EventType.ACTIVE:
+                # The trial is active
                 environment_session.produce_observations(observations)
-        if "message" in event:
-            (sender, message) = event["message"]
-            print(f"environment received a message from '{sender}': - '{message}'")
+            else:
+                # The trial termination has been requested
+                environment_session.end(observations)
+        for message in event.messages:
+            print(f"environment received a message from '{message.sender_name}': - '{message.payload}'")
 
     print("environment end")
     print(f"\t * {state['rounds_count']} rounds played")

@@ -26,6 +26,9 @@ services:
       dockerfile: orchestrator.dockerfile
     ports:
       - "9000:9000"
+    depends_on:
+      - environment
+      - random-agent
 
   client:
     build:
@@ -35,6 +38,8 @@ services:
       - PYTHONUNBUFFERED=1
     stdin_open: true
     tty: true
+    depends_on:
+      - orchestrator
 
   dashboard:
     image: cogment/dashboard:latest
@@ -45,10 +50,25 @@ services:
 
   metrics:
     image: cogment/metrics:latest
-    user: 0:0
-    command: --config.file=/etc/prometheus/prometheus.yml --log.level=error
+    command: --config.file=/etc/prometheus/prometheus.yml
     volumes:
       - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./metrics/data:/prometheus
     ports:
       - 9090:9090/tcp
+    depends_on:
+      - cadvisor
+
+  cadvisor:
+    privileged: true
+    devices:
+      - /dev/kmsg
+    image: gcr.io/cadvisor/cadvisor:latest
+    ports:
+      - 9088:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro

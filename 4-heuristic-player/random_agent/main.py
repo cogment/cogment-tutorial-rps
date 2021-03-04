@@ -26,26 +26,16 @@ async def random_agent(actor_session):
     actor_session.start()
 
     async for event in actor_session.event_loop():
-        if "observation" in event:
-            observation = event["observation"]
+        if event.observation:
+            observation = event.observation
             print(f"'{actor_session.name}' received an observation: '{observation}'")
-            action = PlayerAction(move=random.choice(MOVES))
-            actor_session.do_action(action)
-        if "reward" in event:
-            reward = event["reward"]
-            print(f"'{actor_session.name}' received a reward for tick #{reward.tick_id}: {reward.value}")
-        if "message" in event:
-            (sender, message) = event["message"]
-            print(f"'{actor_session.name}' received a message from '{sender}': - '{message}'")
-        if "final_data" in event:
-            final_data = event["final_data"]
-            for observation in final_data.observations:
-                print(f"'{actor_session.name}' received a final observation: '{observation}'")
-            for reward in final_data.rewards:
-                print(f"'{actor_session.name}' received a final reward for tick #{reward.tick_id}: {reward.value}")
-            for message in final_data.messages:
-                (sender, message) = message
-                print(f"'{actor_session.name}' received a final message from '{sender}': - '{message}'")
+            if event.type == cogment.EventType.ACTIVE:
+                action = PlayerAction(move=random.choice(MOVES))
+                actor_session.do_action(action)
+        for reward in event.rewards:
+            print(f"'{actor_session.name}' received a reward for tick #{reward.tick_id}: {reward.value}/{reward.confidence}")
+        for message in event.messages:
+            print(f"'{actor_session.name}' received a message from '{message.sender_name}': - '{message.payload}'")
 
 DEFEATS = {
     ROCK: PAPER,
@@ -57,33 +47,23 @@ async def heuristic_agent(actor_session):
     actor_session.start()
 
     async for event in actor_session.event_loop():
-        if "observation" in event:
-            observation = event["observation"]
+        if event.observation:
+            observation = event.observation
             print(f"'{actor_session.name}' received an observation: '{observation}'")
-            if observation.me.won_last:
-                # I won the last round, let's play the same thing
-                actor_session.do_action(PlayerAction(move=observation.me.last_move))
-            elif observation.them.won_last:
-                # I lost the last round, let's play what would have won
-                actor_session.do_action(PlayerAction(move=DEFEATS[observation.them.last_move]))
-            else:
-                # last round was a draw, let's play randomly
-                actor_session.do_action(PlayerAction(move=random.choice(MOVES)))
-        if "reward" in event:
-            reward = event["reward"]
-            print(f"{actor_session.name} received a reward for tick #{reward.tick_id}: {reward.value}")
-        if "message" in event:
-            (sender, message) = event["message"]
-            print(f"'{actor_session.name}' received a message from '{sender}': - '{message}'")
-        if "final_data" in event:
-            final_data = event["final_data"]
-            for observation in final_data.observations:
-                print(f"'{actor_session.name}' received a final observation: '{observation}'")
-            for reward in final_data.rewards:
-                print(f"{actor_session.name} received a final reward for tick #{reward.tick_id}: {reward.value}")
-            for message in final_data.messages:
-                (sender, message) = event["message"]
-                print(f"'{actor_session.name}' received a final message from '{sender}': - '{message}'")
+            if event.type == cogment.EventType.ACTIVE:
+                if observation.me.won_last:
+                    # I won the last round, let's play the same thing
+                    actor_session.do_action(PlayerAction(move=observation.me.last_move))
+                elif observation.them.won_last:
+                    # I lost the last round, let's play what would have won
+                    actor_session.do_action(PlayerAction(move=DEFEATS[observation.them.last_move]))
+                else:
+                    # last round was a draw, let's play randomly
+                    actor_session.do_action(PlayerAction(move=random.choice(MOVES)))
+        for reward in event.rewards:
+            print(f"'{actor_session.name}' received a reward for tick #{reward.tick_id}: {reward.value}/{reward.confidence}")
+        for message in event.messages:
+            print(f"'{actor_session.name}' received a message from '{message.sender_name}': - '{message.payload}'")
 
 async def main():
     print("Random & Heuristic agents service up and running.")

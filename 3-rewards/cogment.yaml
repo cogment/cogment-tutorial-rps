@@ -4,13 +4,15 @@ import:
 
 commands:
   generate: >
-    cogment generate --python_dir=./environment &&
-    cogment generate --python_dir=./random_agent &&
-    cogment generate --python_dir=./client
-  build: docker-compose build
-  # Start and stop services
-  start: docker-compose up orchestrator metrics dashboard environment random-agent
-  stop: docker-compose stop orchestrator metrics dashboard environment random-agent
+    cogment generate
+    --python_dir environment
+    --python_dir client
+    --python_dir random_agent
+  build: docker-compose build dashboard
+  dashboard: docker-compose up --build dashboard
+  start: docker-compose up dashboard metrics orchestrator environment random-agent
+  stop: docker-compose stop dashboard metrics orchestrator environment random-agent
+  down: docker-compose down
   client: docker-compose run --rm client
 
 environment:
