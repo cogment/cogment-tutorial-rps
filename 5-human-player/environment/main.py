@@ -52,7 +52,7 @@ async def environment(environment_session):
 
     async for event in environment_session.event_loop():
         if event.actions:
-            [p1_action, p2_action] = event.actions
+            [p1_action, p2_action] = [recv_action.action for recv_action in event.actions]
 
             # Compute who wins, if the two players had the same move, nobody wins
             p1_state = PlayerState(

@@ -49,7 +49,7 @@ async def environment(environment_session):
 
     async for event in environment_session.event_loop():
         if event.actions:
-            [p1_action, p2_action] = event.actions
+            [p1_action, p2_action] = [recv_action.action for recv_action in event.actions]
             print(f"{p1.actor_name} played {MOVES_STR[p1_action.move]}")
             print(f"{p2.actor_name} played {MOVES_STR[p2_action.move]}")
 

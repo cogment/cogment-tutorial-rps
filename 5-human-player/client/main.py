@@ -29,19 +29,17 @@ async def main():
 
     context = cogment.Context(cog_settings=cog_settings, user_id="rps")
 
-    trial_finished = asyncio.get_running_loop().create_future()
     async def human_player(actor_session):
         round_index = 0
-        nonlocal trial_finished
 
         actor_session.start()
 
         def print_observation(observation):
-            print(f"🧑 played {MOVES_STR[observation.me.last_move]}")
-            print(f"🤖 played {MOVES_STR[observation.them.last_move]}")
-            if observation.me.won_last:
+            print(f"🧑 played {MOVES_STR[observation.snapshot.me.last_move]}")
+            print(f"🤖 played {MOVES_STR[observation.snapshot.them.last_move]}")
+            if observation.snapshot.me.won_last:
                 print(f" -> 🧑 wins round #{round_index + 1}")
-            elif observation.them.won_last:
+            elif observation.snapshot.them.won_last:
                 print(f" -> 🤖 wins the round #{round_index + 1}")
             else:
                 print(f" -> round #{round_index + 1} is a draw")
@@ -74,30 +72,28 @@ async def main():
                     print("\n")
                     round_index += 1
 
-        trial_finished.set_result(True)
-
     context.register_actor(
         impl=human_player,
         impl_name="human",
         actor_classes=["player"])
 
-    # Create and join a new trial
-    trial_id = asyncio.get_running_loop().create_future()
-    async def trial_controler(control_session):
-        nonlocal trial_id
-        print(f"Trial '{control_session.get_trial_id()}' starts")
-        trial_id.set_result(control_session.get_trial_id())
-        await trial_finished
-        print(f"Trial '{control_session.get_trial_id()}' terminating")
-        await control_session.terminate_trial()
+    # Create a controller
+    controller = context.get_controller(endpoint=cogment.Endpoint("orchestrator:9000"))
 
-    trial = asyncio.create_task(context.start_trial(endpoint=cogment.Endpoint("orchestrator:9000"), impl=trial_controler, trial_config=TrialConfig()))
-    # Wait until the trial id is known
-    trial_id = await trial_id
-    # Join the trial as a human player
+    # Start a new trial
+    trial_id = await controller.start_trial(trial_config=TrialConfig())
+    print(f"Trial '{trial_id}' started")
+
+    # Let the human actor join the trial
     await context.join_trial(trial_id=trial_id, endpoint=cogment.Endpoint("orchestrator:9000"), impl_name="human")
-    # Wait until the trial terminates
-    await trial
+    print(f"Human actor joined trial '{trial_id}'")
+
+    # Wait for the trial to end by itself
+    async for trial_info in controller.watch_trials(trial_state_filters=[cogment.TrialState.ENDED]):
+        if trial_info.trial_id == trial_id:
+            break
+
+    print(f"Trial '{trial_id}' ended")
 
 if __name__ == '__main__':
     asyncio.run(main())

@@ -8,7 +8,7 @@ commands:
     --python_dir environment
     --python_dir client
     --python_dir random_agent
-  build: docker-compose build dashboard
+  build: docker-compose build dashboard metrics orchestrator environment random-agent
   dashboard: docker-compose up --build dashboard
   start: docker-compose up dashboard metrics orchestrator environment random-agent
   stop: docker-compose stop dashboard metrics orchestrator environment random-agent

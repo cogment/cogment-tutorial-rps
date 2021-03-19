@@ -33,7 +33,7 @@ async def random_agent(actor_session):
                 action = PlayerAction(move=random.choice(MOVES))
                 actor_session.do_action(action)
         for reward in event.rewards:
-            print(f"'{actor_session.name}' received a reward for tick #{reward.tick_id}: {reward.value}/{reward.confidence}")
+            print(f"'{actor_session.name}' received a reward for tick #{reward.tick_id}: {reward.value}")
         for message in event.messages:
             print(f"'{actor_session.name}' received a message from '{message.sender_name}': - '{message.payload}'")
 
@@ -51,17 +51,17 @@ async def heuristic_agent(actor_session):
             observation = event.observation
             print(f"'{actor_session.name}' received an observation: '{observation}'")
             if event.type == cogment.EventType.ACTIVE:
-                if observation.me.won_last:
+                if observation.snapshot.me.won_last:
                     # I won the last round, let's play the same thing
-                    actor_session.do_action(PlayerAction(move=observation.me.last_move))
-                elif observation.them.won_last:
+                    actor_session.do_action(PlayerAction(move=observation.snapshot.me.last_move))
+                elif observation.snapshot.them.won_last:
                     # I lost the last round, let's play what would have won
-                    actor_session.do_action(PlayerAction(move=DEFEATS[observation.them.last_move]))
+                    actor_session.do_action(PlayerAction(move=DEFEATS[observation.snapshot.them.last_move]))
                 else:
                     # last round was a draw, let's play randomly
                     actor_session.do_action(PlayerAction(move=random.choice(MOVES)))
         for reward in event.rewards:
-            print(f"'{actor_session.name}' received a reward for tick #{reward.tick_id}: {reward.value}/{reward.confidence}")
+            print(f"'{actor_session.name}' received a reward for tick #{reward.tick_id}: {reward.value}")
         for message in event.messages:
             print(f"'{actor_session.name}' received a message from '{message.sender_name}': - '{message.payload}'")
 
