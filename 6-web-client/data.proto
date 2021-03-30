@@ -14,7 +14,16 @@
 
 syntax = "proto3";
 
-package cogment_demo_rps;
+package rps;
+
+message EnvConfig {
+  int32 target_game_score = 1;
+  int32 target_games_count = 2;
+}
+
+message TrialConfig {
+  EnvConfig env_config = 1;
+}
 
 enum Move {
   ROCK = 0;
@@ -22,28 +31,16 @@ enum Move {
   SCISSORS = 2;
 }
 
-message EnvironmentConfig {
-  int32 target_score = 1;
-  int32 games_count = 2;
-}
-
-message TrialConfig {
-	EnvironmentConfig environment_config = 1;
-}
-
 message PlayerState {
-  int32 current_game_score = 1;
-  bool last_round_win = 2;
-  Move last_round_move = 3;
+  bool won_last = 2;
+  Move last_move = 3;
 }
 
 message Observation {
-  int32 game_index = 1;
-  int32 round_index = 2;
-  PlayerState me = 3;
-  PlayerState them = 4;
+  PlayerState me = 1;
+  PlayerState them = 2;
 }
 
-message Action {
+message PlayerAction {
   Move move = 1;
 }

@@ -12,38 +12,72 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cogment
 import cog_settings
+from data_pb2 import PlayerAction, ROCK, PAPER, SCISSORS
+
+import cogment
 
 import asyncio
 import random
 
-from data_pb2 import Action, ROCK, PAPER, SCISSORS
-
 MOVES = [ROCK, PAPER, SCISSORS]
-MOVES_STR = ["👊 rock", "✋ paper", "✌️ scissors"]
 
-async def random_player(actor_session):
+async def random_agent(actor_session):
     actor_session.start()
-    print(f"[Agent '{actor_session.name}'] trial {actor_session.get_trial_id()} starts!")
 
     async for event in actor_session.event_loop():
-        if "observation" in event:
-            next_action = Action(move=random.choice(MOVES))
-            print(f"[Agent '{actor_session.name}'] will play {MOVES_STR[next_action.move]}")
-            actor_session.do_action(next_action)
-            print(f"[Agent '{actor_session.name}'] played")
+        if event.observation:
+            observation = event.observation
+            print(f"'{actor_session.name}' received an observation: '{observation}'")
+            if event.type == cogment.EventType.ACTIVE:
+                action = PlayerAction(move=random.choice(MOVES))
+                actor_session.do_action(action)
+        for reward in event.rewards:
+            print(f"'{actor_session.name}' received a reward for tick #{reward.tick_id}: {reward.value}")
+        for message in event.messages:
+            print(f"'{actor_session.name}' received a message from '{message.sender_name}': - '{message.payload}'")
 
+DEFEATS = {
+    ROCK: PAPER,
+    SCISSORS: ROCK,
+    PAPER: SCISSORS
+}
+
+async def heuristic_agent(actor_session):
+    actor_session.start()
+
+    async for event in actor_session.event_loop():
+        if event.observation:
+            observation = event.observation
+            print(f"'{actor_session.name}' received an observation: '{observation}'")
+            if event.type == cogment.EventType.ACTIVE:
+                if observation.snapshot.me.won_last:
+                    # I won the last round, let's play the same thing
+                    actor_session.do_action(PlayerAction(move=observation.snapshot.me.last_move))
+                elif observation.snapshot.them.won_last:
+                    # I lost the last round, let's play what would have won
+                    actor_session.do_action(PlayerAction(move=DEFEATS[observation.snapshot.them.last_move]))
+                else:
+                    # last round was a draw, let's play randomly
+                    actor_session.do_action(PlayerAction(move=random.choice(MOVES)))
+        for reward in event.rewards:
+            print(f"'{actor_session.name}' received a reward for tick #{reward.tick_id}: {reward.value}")
+        for message in event.messages:
+            print(f"'{actor_session.name}' received a message from '{message.sender_name}': - '{message.payload}'")
 
 async def main():
-    print("Agent service up and running.")
+    print("Random & Heuristic agents service up and running.")
 
-    context = cogment.Context(cog_settings=cog_settings, user_id='foo')
+    context = cogment.Context(cog_settings=cog_settings, user_id="rps")
+    context.register_actor(
+        impl=random_agent,
+        impl_name="random_agent",
+        actor_classes=["player",])
 
     context.register_actor(
-        impl=random_player,
-        impl_name="random",
-        actor_classes=["player"])
+        impl=heuristic_agent,
+        impl_name="heuristic_agent",
+        actor_classes=["player",])
 
     await context.serve_all_registered(cogment.ServedEndpoint(port=9000))
 

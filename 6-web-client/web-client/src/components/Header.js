@@ -1,8 +1,9 @@
-import { makeStyles, Typography } from '@material-ui/core';
-import React from 'react'
+import React from "react";
 
-import ComputerIcon from "@material-ui/icons/Computer"
-import PersonIcon from "@material-ui/icons/Person"
+//Just some imports from Material UI for the styling, as well as some icons that we'll be using
+import { makeStyles, Typography } from "@material-ui/core";
+import ComputerIcon from "@material-ui/icons/Computer";
+import PersonIcon from "@material-ui/icons/Person";
 
 const useStyles = makeStyles(theme => ({
     banner: {
@@ -14,9 +15,10 @@ const useStyles = makeStyles(theme => ({
         justifyContent: "center"
     },
 
-    inlineImg:{
+    inlineImg: {
         height: "1em",
         width: "1em",
+        margin: "0 0.25em",
         fontSize: "inherit"
     },
 
@@ -30,19 +32,38 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-export const Header = ({observation, gameState}) => {
-    
+export const Header = ({ gameState }) => {
+    //Get styles
     const classes = useStyles();
 
-    const rock = <img alt="rock" className={classes.inlineImg} src={"images/hand-rock.svg"} />
-    const paper = <img alt="paper" className={classes.inlineImg} src={"images/hand-paper.svg"} />
-    const scissors = <img alt="scissors" className={classes.inlineImg} src={"images/hand-scissors.svg"} />
-    const human = <PersonIcon className={classes.inlineImg}/>
-    const computer = <ComputerIcon className={classes.inlineImg}/>
+    //Define icons we will be using, for simple access later in the component
+    const rock = (
+        <img
+            alt="rock"
+            className={classes.inlineImg}
+            src={"images/hand-rock.svg"}
+        />
+    );
+    const paper = (
+        <img
+            alt="paper"
+            className={classes.inlineImg}
+            src={"images/hand-paper.svg"}
+        />
+    );
+    const scissors = (
+        <img
+            alt="scissors"
+            className={classes.inlineImg}
+            src={"images/hand-scissors.svg"}
+        />
+    );
+    const human = <PersonIcon className={classes.inlineImg} />;
+    const computer = <ComputerIcon className={classes.inlineImg} />;
 
-    //Go from enum, to coresponding move image
-    function getMoveImg(move){
-        switch(move){
+    //Simple function to go from enum to an image, this is the similar to the function in App.js that did something similar
+    function getMoveImg(move) {
+        switch (move) {
             case 0:
                 return rock;
             case 1:
@@ -50,44 +71,60 @@ export const Header = ({observation, gameState}) => {
             case 2:
                 return scissors;
             default:
-                throw new Error("Not a rock, paper, or scissors")
+                throw new Error("Not a rock, paper, or scissors");
         }
-    }
-
-    //Get the text for who won the round
-    let winText
-
-    if(gameState === "playing"){
-        const tie = observation.me.lastRoundWin === observation.them.lastRoundWin
-
-        //There's &nbsp; everywhere because of how jsx treats whitespace. The alternative looks even worse
-        winText = tie ? "Tie!" : <>
-            {observation.me.lastRoundWin && <>{human}&nbsp;Won!</>}
-            {observation.them.lastRoundWin && <>{computer}&nbsp;Won!</>}
-        </>
     }
 
     return (
         <div className={classes.banner}>
-            {gameState === "start" && <Typography variant="h1" align="center" className={classes.headerText}>Pick&nbsp;{rock},&nbsp;{paper},&nbsp;or&nbsp;{scissors}</Typography>}
-            {gameState === "playing" && 
+            {/*
+          Show different information based on game state
+          For the first option, if the game stage is just starting, tell the human to chose rock, paper, or scissors
+        */}
+            {gameState.gameStage === "start" && (
                 <Typography variant="h1" align="center" className={classes.headerText}>
-                    {human}&nbsp;{getMoveImg(observation.me.lastRoundMove)}
-                    <div className={classes.spacer}/>
-                    {computer}&nbsp;{getMoveImg(observation.them.lastRoundMove)}
-                    <div className={classes.spacer}/>
-                    {winText}
+                    Pick{rock},{paper}, or{scissors}
                 </Typography>
-            }
-            {gameState === "end" && 
+            )}
+
+            {/*
+          If the game stage is in the middle of playing, let the human know what the result of the last round was
+        */}
+            {gameState.gameStage === "playing" && (
                 <Typography variant="h1" align="center" className={classes.headerText}>
-                    {observation.me.currentGameScore > observation.them.currentGameScore && human}
-                    {observation.me.currentGameScore < observation.them.currentGameScore && computer}
-                    &nbsp;WINS!
-                    <div className={classes.spacer}/>
-                    Choose to play again
+                    {/*
+              Show what each player chose as their action
+            */}
+                    {human}
+                    {getMoveImg(gameState.lastMoveHuman)}
+                    <div className={classes.spacer} />
+                    {computer}
+                    {getMoveImg(gameState.lastMoveComputer)}
+                    <div className={classes.spacer} />
+
+                    {/*
+              Show the result of each player choosing the aformentioned actions, either the human wins the round, computer wins the round, or it's a tie
+            */}
+                    {gameState.lastWonHuman === gameState.lastWonComputer &&
+                        "Tie!"}
+
+                    {gameState.lastWonHuman && !gameState.lastWonComputer && (
+                        <>{human}Won!</>
+                    )}
+
+                    {!gameState.lastWonHuman && gameState.lastWonComputer && (
+                        <>{computer}Won!</>
+                    )}
                 </Typography>
-            }
+            )}
+            {/*
+          If the game stage is end, tell the player
+        */}
+            {gameState.gameStage === "end" && (
+                <Typography variant="h1" align="center" className={classes.headerText}>
+                    Games Done!
+                </Typography>
+            )}
         </div>
-    )
-}
+    );
+};

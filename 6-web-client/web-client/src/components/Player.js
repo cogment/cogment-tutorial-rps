@@ -1,11 +1,13 @@
-import React, { useState } from 'react'
+import React from "react";
+
+//Material UI imports, for style
 import Grid from "@material-ui/core/Grid";
-import { makeStyles, Typography } from '@material-ui/core';
-import { Action } from '../data_pb';
-import { RPSButton } from './RPSButton';
+import { makeStyles } from "@material-ui/core";
+
+//One last component which we haven't defined yet, don't worry, it's not too big
+import { RPSButton } from "./RPSButton";
 
 const useStyles = makeStyles(theme => ({
-
     icon: {
         width: "8vw",
         height: "8vw",
@@ -24,41 +26,53 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-export const Player = ({ color, IconClass, score=0, isHuman, onAction, selected }) => {
-    const classes = useStyles({color, isHuman});
-
-    function choose (move){
-        const action = new Action();
-        action.setMove(move);
-        onAction(action);
-    }
-    
-    let [hovered, setHovered] = useState(null);
-    
-    //If this is a non-human agent, the hovered button is set by the props
-    if(!isHuman){
-        hovered = selected;
-    }
+//This component will recieve some props, which will tell it about the trial state, and whether it's the human, or computer player
+export const Player = ({
+    IconClass /*Either a human, or computer icon*/,
+    isHuman /*Is the component a human?*/,
+    choose,
+    selected /*Which option is selected (Only relevant if this is representing the computer)*/,
+}) => {
+    const classes = useStyles({ isHuman });
 
     return (
         <Grid className={classes.choiceContainer} container>
+            {/*
+          Show for this player, whether they are the human, or the computer
+        */}
             <Grid className={classes.choiceButtonContainer} item xs={3}>
                 <IconClass className={classes.icon} />
-                <Typography variant="h1">{score}</Typography>
-            </Grid>
-            
-
-            <Grid className={classes.choiceButtonContainer} item xs={3}>
-                <RPSButton hovered={hovered} color={color} move="rock" isHuman={isHuman} onChoose={choose} onHovered={setHovered}/>
             </Grid>
 
+            {/*
+          The Rock, Paper, and Scissors buttons
+        */}
             <Grid className={classes.choiceButtonContainer} item xs={3}>
-                <RPSButton hovered={hovered} color={color} move="paper" isHuman={isHuman} onChoose={choose} onHovered={setHovered}/>
+                <RPSButton
+                    selected={selected === "rock"}
+                    move="rock"
+                    onClick={() => choose(0)}
+                    isHuman={isHuman}
+                />
             </Grid>
 
             <Grid className={classes.choiceButtonContainer} item xs={3}>
-                <RPSButton hovered={hovered} color={color} move="scissors" isHuman={isHuman} onChoose={choose} onHovered={setHovered}/>
+                <RPSButton
+                    selected={selected === "paper"}
+                    move="paper"
+                    onClick={() => choose(1)}
+                    isHuman={isHuman}
+                />
+            </Grid>
+
+            <Grid className={classes.choiceButtonContainer} item xs={3}>
+                <RPSButton
+                    selected={selected === "scissors"}
+                    move="scissors"
+                    onClick={() => choose(2)}
+                    isHuman={isHuman}
+                />
             </Grid>
         </Grid>
-    )
-}
+    );
+};

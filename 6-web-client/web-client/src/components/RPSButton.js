@@ -1,7 +1,6 @@
-import { IconButton, makeStyles } from '@material-ui/core'
 import React from 'react'
 
-import { Move } from '../data_pb';
+import { IconButton, makeStyles, useTheme } from '@material-ui/core'
 
 const useStyles = makeStyles({
     choiceButton: {
@@ -24,21 +23,23 @@ const useStyles = makeStyles({
     },
 
     choiceImg: {
-        paddingRight: "1vw",
         width: "12vw",
-        height: "12vw"
+        height: "12vw",
+        paddingRight: "1vw",
     }
 })
 
-export const RPSButton = ({ hovered, isHuman, color, move, onHovered, onChoose}) => {
+export const RPSButton = ({ selected, isHuman, move, onClick}) => {
+    const theme = useTheme();
+
+    const color = isHuman ? theme.palette.primary.main : theme.palette.secondary.main
     const classes = useStyles({color, isHuman})
+    
+    const className = isHuman || selected ? classes.choiceButton : classes.choiceButtonGray
 
     return (
-        <IconButton className={hovered === move || hovered === null ? classes.choiceButton : classes.choiceButtonGray} 
-                    //Move[move.toUpperCase()] selects the proper enum from data_pb
-                    onClick={() => onChoose(Move[move.toUpperCase()])}
-                    onMouseEnter={() => onHovered(move)}
-                    onMouseLeave={() => onHovered(null)}>
+        <IconButton className={className} 
+                    onClick={onClick}>
             <img alt={(isHuman ? "Human " : "Computer ") + move} className={classes.choiceImg} src={"images/hand-" + move + ".svg"} />
         </IconButton>
     )

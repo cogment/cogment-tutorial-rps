@@ -81,7 +81,7 @@ async def main():
     controller = context.get_controller(endpoint=cogment.Endpoint("orchestrator:9000"))
 
     # Start a new trial
-    trial_id = await controller.start_trial(trial_config=TrialConfig())
+    trial_id = await controller.start_trial("player_1", trial_config=TrialConfig())
     print(f"Trial '{trial_id}' started")
 
     # Let the human actor join the trial

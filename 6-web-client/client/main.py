@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cogment
 import cog_settings
+from data_pb2 import PlayerAction, ROCK, PAPER, SCISSORS, TrialConfig
 
-from data_pb2 import Action, ROCK, PAPER, SCISSORS, TrialConfig
+import cogment
+
 import asyncio
 
 MOVES = [ROCK, PAPER, SCISSORS]
@@ -23,89 +24,76 @@ MOVES_STR = ["👊 rock", "✋ paper", "✌️ scissors"]
 
 MOVES_PROMPT = ', '.join([ f"{name} ({idx + 1})" for idx, name in enumerate(MOVES_STR)])
 
-def print_observation(observation):
-    print(f"🧑 played {MOVES_STR[observation.me.last_round_move]}")
-    print(f"🤖 played {MOVES_STR[observation.them.last_round_move]}")
-    if observation.me.last_round_win:
-        print(f" -> 🧑 wins the round - 🧑 {observation.me.current_game_score} / 🤖 {observation.them.current_game_score}")
-    elif observation.them.last_round_win:
-        print(f" -> 🤖 wins the round - 🧑 {observation.me.current_game_score} / 🤖 {observation.them.current_game_score}")
-    else:
-        print(f" -> it's a draw - 🧑 {observation.me.current_game_score} / 🤖 {observation.them.current_game_score}")
-
 async def main():
-    print("Client up and running.")
+    print("Client starting...")
 
-    context = cogment.Context(cog_settings=cog_settings, user_id='foo')
+    context = cogment.Context(cog_settings=cog_settings, user_id="rps")
 
-    future_trial_finished = asyncio.get_running_loop().create_future()
     async def human_player(actor_session):
-        nonlocal future_trial_finished
+        round_index = 0
 
         actor_session.start()
 
-        async for event in actor_session.event_loop():
-            if "observation" in event:
-                observation = event["observation"]
+        def print_observation(observation):
+            print(f"🧑 played {MOVES_STR[observation.snapshot.me.last_move]}")
+            print(f"🤖 played {MOVES_STR[observation.snapshot.them.last_move]}")
+            if observation.snapshot.me.won_last:
+                print(f" -> 🧑 wins round #{round_index + 1}")
+            elif observation.snapshot.them.won_last:
+                print(f" -> 🤖 wins the round #{round_index + 1}")
+            else:
+                print(f" -> round #{round_index + 1} is a draw")
 
-                if observation.game_index > 0 or observation.round_index > 0:
+        async for event in actor_session.event_loop():
+            if event.observation:
+                observation = event.observation
+
+                if round_index > 0:
                     # The only time the observation is not relevant is on the first round of the first game
                     print_observation(observation)
 
-                if observation.round_index == 0:
-                    if observation.game_index > 0:
-                        print(f"\n** Game #{observation.game_index} over! - 🧑 {observation.me.current_game_score} / 🤖 {observation.them.current_game_score} **")
-                    print(f"\n** Game #{observation.game_index + 1} starts! - 🧑 0 / 🤖 0 **")
+                if event.type == cogment.EventType.ACTIVE:
+                    # Only play when the trial is active
+                    print(f"\n-- Round #{round_index + 1} --\n")
+                    move = None
+                    while move is None:
+                        human_input = input(f"What's your move: {MOVES_PROMPT} ? ")
+                        try:
+                            move_idx = int(human_input) - 1
+                            if 0 <= move_idx < len(MOVES):
+                                move=MOVES[move_idx]
+                            else:
+                                print(f"⚠️ Invalid move index '{human_input}'")
+                        except:
+                            print(f"⚠️ Unrecognized input '{human_input}'")
 
-                print(f"\n-- Round #{observation.round_index + 1} --\n")
-                move = None
-                while move is None:
-                    human_input = input(f"What's your move: {MOVES_PROMPT} ? ")
-                    try:
-                        move_idx = int(human_input) - 1
-                        if 0 <= move_idx < len(MOVES):
-                            move=MOVES[move_idx]
-                        else:
-                            print(f"⚠️ Invalid move index '{human_input}'")
-                    except:
-                        print(f"⚠️ Unrecognized input '{human_input}'")
-
-                next_action = Action(move=move)
-                actor_session.do_action(next_action)
-                print("\n")
-            if "final_data" in event:
-                final_data = event["final_data"]
-
-                assert len(final_data.observations) == 1
-                assert len(final_data.messages) == 0
-
-                print_observation(final_data.observations[0])
-
-        future_trial_finished.set_result(True)
+                    next_action = PlayerAction(move=move)
+                    actor_session.do_action(next_action)
+                    print("\n")
+                    round_index += 1
 
     context.register_actor(
         impl=human_player,
         impl_name="human",
         actor_classes=["player"])
 
-    # Create and join a new trial
-    future_trial_id = asyncio.get_running_loop().create_future()
-    async def trial_controler(control_session):
-        nonlocal future_trial_id
-        print(f"Trial '{control_session.get_trial_id()}' starts")
-        future_trial_id.set_result(control_session.get_trial_id())
-        await future_trial_finished
-        print(f"Trial '{control_session.get_trial_id()}' terminating")
-        await control_session.terminate_trial()
+    # Create a controller
+    controller = context.get_controller(endpoint=cogment.Endpoint("orchestrator:9000"))
 
-    trial = asyncio.create_task(context.start_trial(endpoint=cogment.Endpoint("orchestrator:9000"), impl=trial_controler, trial_config=TrialConfig()))
-    trial_id = await future_trial_id
-    # Join the trial as a human player
+    # Start a new trial
+    trial_id = await controller.start_trial("player_1", trial_config=TrialConfig())
+    print(f"Trial '{trial_id}' started")
+
+    # Let the human actor join the trial
     await context.join_trial(trial_id=trial_id, endpoint=cogment.Endpoint("orchestrator:9000"), impl_name="human")
-    # Wait for the trial to be finished (well not really but didn't find a good way)
-    # await asyncio.sleep(10)
-    # future_trial_finished.set_result(True)
-    await trial
+    print(f"Human actor joined trial '{trial_id}'")
+
+    # Wait for the trial to end by itself
+    async for trial_info in controller.watch_trials(trial_state_filters=[cogment.TrialState.ENDED]):
+        if trial_info.trial_id == trial_id:
+            break
+
+    print(f"Trial '{trial_id}' ended")
 
 if __name__ == '__main__':
     asyncio.run(main())

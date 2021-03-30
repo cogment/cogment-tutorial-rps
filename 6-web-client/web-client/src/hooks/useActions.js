@@ -1,23 +1,24 @@
 import { useEffect, useState } from "react"
-import {cogment}from "@ai-r/cogment-js-sdk"
+import * as cogment from "@cogment/cogment-js-sdk"
 
-export const useActions = (cogSettings, actorName, actorClass, userId) => {
+export const useActions = (cogSettings, actorName, actorClass) => {
     const [event, setEvent] = useState({observation: null, 
                                         message: null, 
                                         reward: null});
 
     const [startTrial, setStartTrial] = useState(null);                            
     const [sendAction, setSendAction] = useState(null);
-
-    console.log(cogment);
     
     //Set up the connection and register the actor only once, regardless of re-rendering
     useEffect(() => {
         const service = cogment.createService(
-            {cogSettings}
+            {
+                cogSettings,
+                grpcURL: window.location.protocol + '//' + window.location.hostname + ":8080"
+            }
         )
 
-        const actor = { name: actorName, class: actorClass };
+        const actor = { name: actorName, actorClass: actorClass };
 
         service.registerActor(
             actor,
@@ -29,16 +30,14 @@ export const useActions = (cogSettings, actorName, actorClass, userId) => {
                     actorSession.sendAction(action);
                 })
 
-                for await (const {
-                    observation,
-                    message,
-                    reward,
-                } of actorSession.eventLoop()) {
+                for await (const event of actorSession.eventLoop()) {
                     //Parse the observation into a regular JS object
                     //TODO: this will eventually be part of the API
-                    let observationOBJ = observation && observation.toObject();
+                    let observationOBJ = event.observation && event.observation.toObject();
+                    event.observation = observationOBJ;
+                    event.last = event.type === 3;
 
-                    setEvent({observation: observationOBJ, message, reward })
+                    setEvent(event)
                 }
             },
         );
@@ -50,7 +49,7 @@ export const useActions = (cogSettings, actorName, actorClass, userId) => {
         //Again, double arrow function cause react will turn a single one into a lazy loaded function
         setStartTrial(() => async () => {
             const { trialId } = await trialController.startTrial(actor.name)
-            trialController.joinTrial(trialId, actor)
+            await trialController.joinTrial(trialId, actor)
         })
     }, [cogSettings, actorName, actorClass])
 
