@@ -9,3 +9,6 @@ cog_settings.py
 
 # Js sdk
 web-client
+
+# Backup of "sed-ed" files
+*.bak
