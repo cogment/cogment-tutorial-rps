@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-Updating to the newest version of everything
+### Changed 
+
+- Update to `cogment-py-sdk` v1.0.0-alpha12 and `cogment-orchestrator` v1.0.0-alpha9
 
 ## v1.0.0-alpha1 - 2021-03-30
 
