@@ -134,6 +134,7 @@ export const App = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [observation])
 
+    //If the the value of 'last' changes, see if it is true, and if so set the gameStage to 'end'
     useEffect(() => {
         if(!last) return;
 

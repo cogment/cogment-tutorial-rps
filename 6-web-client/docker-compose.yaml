@@ -50,6 +50,7 @@ services:
       - metrics
 
   metrics:
+    user: 0:0
     image: cogment/metrics:latest
     command: --config.file=/etc/prometheus/prometheus.yml
     volumes:

@@ -27,7 +27,7 @@ trial:
 
 # Static configuration
 actor_classes:
-  - id: player
+  - name: player
     action:
       space: rps.PlayerAction
     observation:
