@@ -18,6 +18,7 @@ This repository includes the sources of the different steps of the Cogment RPS t
 - [Step 4: Add a second actor implementation based on a heuristic](./4-heuristic-player)
 - [Step 5: Add a human player in the loop](./5-human-player)
 - [Step 6: Implement a web client for the human player](./6-web-client)
+- [Step 7: Add a player trained with Reinforcement Learning using DQN](./7-dqn-player)
 
 ## Dependencies
 

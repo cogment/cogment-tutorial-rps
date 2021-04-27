@@ -1,1 +1,2 @@
 cogment==1.0.0-beta3
+tensorflow~=2.4
