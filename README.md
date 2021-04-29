@@ -41,7 +41,7 @@ Then launch the environment, agents and orchestrator services:
 cogment run start
 ```
 
-For steps 1-5, in a separate terminal, trigger a trial with:
+For steps 1-5 & 7, in a separate terminal, trigger a trial with:
 
 ```
 cogment run client
