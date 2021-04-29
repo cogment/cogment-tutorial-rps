@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## v1.0.0-beta3 - 2021-04-29
+
 ### Added
 
 - New tutorial showing how to train an actor using reinforcement learning techniques
