@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- Naming changes to the DQN player tutorial to follow more closely convention of the algorithm.
+
 ## v1.0.0-beta3 - 2021-04-29
 
 ### Added

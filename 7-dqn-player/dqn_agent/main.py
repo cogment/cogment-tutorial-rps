@@ -27,8 +27,8 @@ batch_size = 50  # Size of batch taken from replay buffer
 gamma = 0.99  # Discount factor for future rewards
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
 loss_function = tf.keras.losses.Huber()  # Using huber loss for stability
-model_target_update_interval = (
-    1000  # How many samples between each update to the target network
+target_model_update_interval = (
+    100  # How many samples between each update to the target model
 )
 epsilon_min = 0.05  # Minimum exploration rate
 epsilon_max = 1.0  # Maximum exploration rate
@@ -84,7 +84,7 @@ def create_replay_buffer():
 # Bunch of global variables, it's generally a bad idea,
 # It works here because we only have one instance of the dqn_agent service.
 _model = create_model()
-_model_target = create_model()
+_target_model = create_model()
 _epsilon = epsilon_max
 _rb = create_replay_buffer()
 _collected_samples_count = 0
@@ -98,9 +98,7 @@ def get_and_update_epsilon():
     return current_epsilon
 
 
-def handle_trial_results(trial_rb):
-    global _model
-    global _model_target
+def append_trial_replay_buffer(trial_rb):
     global _rb
     global _collected_samples_count
 
@@ -124,53 +122,64 @@ def handle_trial_results(trial_rb):
         f"{trial_rb_size} new samples stored after a trial, now having {rb_size} samples over a total of {_collected_samples_count} collected samples."
     )
 
+
+def train():
+    global _model
+    global _target_model
+
+    rb_size = len(_rb["obs_me_last_move"])
+
     if rb_size >= batch_size:
-        # Randomly select a batch
+        # Step 1 - Randomly select a batch
         batch_indices = np.random.choice(range(rb_size), size=batch_size)
         batch_rb = create_replay_buffer()
         for key in batch_rb.keys():
             batch_rb[key] = np.take(_rb[key], batch_indices)
 
-        # Build the updated Q-values for the batch future observations
-        # Use the model target for stability
-        next_rewards = _model_target(
+        # Step 2 - Compute target q values
+        ## Predict the expected reward for the next observation of each sample
+        ## Use the target model for stability
+        target_actions_q_values = _target_model(
             {
                 "obs_me_last_move": batch_rb["next_obs_me_last_move"],
                 "obs_them_last_move": batch_rb["next_obs_them_last_move"],
             }
         )
 
-        # Q value = reward + discount factor * expected future reward
-        expected_action_q_values = batch_rb["reward"] + gamma * tf.reduce_max(
-            next_rewards, axis=1
+        ## target Q value = reward + discount factor * expected future reward
+        target_q_values = batch_rb["reward"] + gamma * tf.reduce_max(
+            target_actions_q_values, axis=1
         )
 
-        # Create a mask of the taken actions for the q values
-        masks = tf.one_hot(batch_rb["action"], actions_count)
+        # Step 3 - Compute estimated q values
+        ## Create masks of the taken actions to later select relevant q values
+        selected_actions_masks = tf.one_hot(batch_rb["action"], actions_count)
 
         with tf.GradientTape() as tape:
-            # Train the model on the states and updated Q-values
-            q_values = _model(
+            ## Recompute q values for all the actions at each sample
+            estimated_actions_q_values = _model(
                 {
                     "obs_me_last_move": batch_rb["obs_me_last_move"],
                     "obs_them_last_move": batch_rb["obs_them_last_move"],
                 }
             )
 
-            # Apply the masks to the Q-values to get the Q-value for action taken
-            action_q_values = tf.reduce_sum(tf.multiply(q_values, masks), axis=1)
+            ## Apply the masks to get the Q value for taken actions
+            estimated_q_values = tf.reduce_sum(
+                tf.multiply(estimated_actions_q_values, selected_actions_masks), axis=1
+            )
 
-            # Calculate loss between the expected Q-value and the computed Q-value
-            loss = loss_function(expected_action_q_values, action_q_values)
+            ## Compute loss between the target Q values and the estimated Q values
+            loss = loss_function(target_q_values, estimated_q_values)
             print(f"loss={loss.numpy()}")
 
-            # Backpropagation
+            ## Backpropagation!
             grads = tape.gradient(loss, _model.trainable_variables)
             optimizer.apply_gradients(zip(grads, _model.trainable_variables))
 
         # Update the target model
-        if _collected_samples_count % model_target_update_interval == 0:
-            _model_target.set_weights(_model.get_weights())
+        if _collected_samples_count % target_model_update_interval == 0:
+            _target_model.set_weights(_model.get_weights())
 
 
 async def dqn_agent(actor_session):
@@ -215,7 +224,8 @@ async def dqn_agent(actor_session):
     # Dropping the last row, as it only contains the last observations
     trial_rb["obs_me_last_move"] = trial_rb["obs_me_last_move"][:-1]
     trial_rb["obs_them_last_move"] = trial_rb["obs_them_last_move"][:-1]
-    handle_trial_results(trial_rb)
+    append_trial_replay_buffer(trial_rb)
+    train()
 
 
 async def main():
