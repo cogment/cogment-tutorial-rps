@@ -1,14 +1,8 @@
 # Cogment "Rock Paper Scissors" (RPS) tutorial
 
-> ⚠️ 🚧 This is part of an upcoming release of cogment and still unstable.
->
-> Current stable version can be found at <https://gitlab.com/cogment/cogment>
+[Cogment](https://cogment.ai) is an innovative open source AI platform designed to leverage the advent of AI to benefit humankind through human-AI collaboration developed by [AI Redefined](https://ai-r.com). Cogment enables AI researchers and engineers to build, train and operate AI agents in simulated or real environments shared with humans. For the full user documentation visit <https://docs.cogment.ai>
 
-## Introduction
-
-The Cogment framework is a high-efficiency, open source framework designed to enable the training of models in environments where humans and agents interact with the environment and each other continuously. It’s capable of distributed, multi-agent, multi-model training.
-
-This repository includes the sources of the different steps of the Cogment RPS tutorial, detailed instructions are available at [docs.cogment.ai](https://docs.cogment.ai/).
+This repository includes the sources of the different steps of the Cogment RPS tutorial, detailed instructions are available at [docs.cogment.ai](https://docs.cogment.ai/cogment/tutorial/introduction/).
 
 ## The steps
 
