@@ -1,4 +1,4 @@
-version: '3.7'
+version: "3.7"
 
 services:
   grpc-cli:
@@ -10,7 +10,6 @@ services:
     environment:
       - COGMENT_GRPC_REFLECTION=1
       - PYTHONUNBUFFERED=1
-
 
   environment:
     build:
@@ -42,7 +41,7 @@ services:
       - orchestrator
 
   dashboard:
-    image: cogment/dashboard:latest
+    image: cogment/dashboard:v1.2.3
     ports:
       - 3003:3000/tcp
     depends_on:
@@ -50,14 +49,13 @@ services:
 
   metrics:
     user: 0:0
-    image: cogment/metrics:latest
+    image: cogment/metrics:v1.2.3
     command: --config.file=/etc/prometheus/prometheus.yml
     volumes:
       - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./metrics/data:/prometheus
     ports:
       - 9090:9090/tcp
-    
 
   cadvisor:
     privileged: true
