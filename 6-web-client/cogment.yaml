@@ -3,19 +3,14 @@ import:
     - data.proto
 
 commands:
-  init-web-client: |
-    cd web-client
-    npm i
-    cd ..
   generate: |
-    cogment run init-web-client
     cogment generate --python_dir=./environment &&
     cogment generate --python_dir=./random_agent &&
     cogment generate --python_dir=./client --js_dir=web-client --typescript
-  build: docker-compose build dashboard metrics orchestrator environment random-agent grpcwebproxy web-client
-  start: docker-compose up dashboard metrics orchestrator environment random-agent grpcwebproxy web-client
-  services: docker-compose up dashboard metrics orchestrator environment random-agent grpcwebproxy
-  stop: docker-compose stop dashboard metrics orchestrator environment random-agent grpcwebproxy web-client
+  build: docker-compose build dashboard metrics orchestrator environment random-agent web-client
+  start: docker-compose up dashboard metrics orchestrator environment random-agent web-client
+  services: docker-compose up dashboard metrics orchestrator environment random-agent
+  stop: docker-compose stop dashboard metrics orchestrator environment random-agent web-client
   tail: docker-compose logs -f
   client: docker-compose run --rm client
 

@@ -14,14 +14,7 @@ scrape_configs:
       - 'environment'
       type: 'A'
       port: 8000
-      refresh_interval: 5s
-
-  - job_name: cadvisor
-    scrape_interval: 5s
-    static_configs:
-      - targets:
-          - cadvisor:8080
-
+refresh_interval: 5s
   - job_name: 'random-agent'
     dns_sd_configs:
     - names:
