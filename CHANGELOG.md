@@ -7,12 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## v1.0.1 - 2021-09-27
+
 ### Changed
 
 - Update to Cogment Orchestrator v1.0.3, Python SDK v1.2.0 and Javascript SDK v1.25.2.
-
-### Changed
-
 - Update copyright notice to use the legal name of AI Redefined Inc.
 
 ## v1.0.0 - 2021-05-11
