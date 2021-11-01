@@ -64,5 +64,3 @@ services:
       - ./metrics/data:/prometheus
     ports:
       - 9090:9090/tcp
-
-

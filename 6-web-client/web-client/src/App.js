@@ -17,7 +17,14 @@ import React, { useEffect, useState } from "react";
 //Then some imports for icons and Material UI functionality we'll be using
 import ComputerIcon from "@material-ui/icons/Computer";
 import PersonIcon from "@material-ui/icons/Person";
-import { Box, Button, Container, makeStyles, Typography, useTheme } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  Container,
+  makeStyles,
+  Typography,
+  useTheme,
+} from "@material-ui/core";
 
 //And here's the important part, we're importing the two things that will allow us to use cogment, first is the 'useActions' hook, this will give us the observations of our human agent, as well as allow us to make actions.
 import { useActions } from "./hooks/useActions";
@@ -34,39 +41,39 @@ import { PlayerAction } from "./data_pb";
 import { Player } from "./components/Player";
 import { Header } from "./components/Header";
 
-const useStyles = makeStyles(theme => ({
-    root: {
-        backgroundColor: theme.palette.primary.light,
-        width: "100vw",
-        height: "100vh"
-    },
+const useStyles = makeStyles((theme) => ({
+  root: {
+    backgroundColor: theme.palette.primary.light,
+    width: "100vw",
+    height: "100vh",
+  },
 
-    container: {
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-    },
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+  },
 }));
 
 function getMoveText(move) {
-    switch (move) {
-        case 0:
-            return "rock"
-        case 1:
-            return "paper"
-        case 2:
-            return "scissors"
-        default:
-            throw new Error("Not a rock, paper, or scissors")
-    }
+  switch (move) {
+    case 0:
+      return "rock";
+    case 1:
+      return "paper";
+    case 2:
+      return "scissors";
+    default:
+      throw new Error("Not a rock, paper, or scissors");
+  }
 }
 
 export const App = () => {
-    //Bring in classes and themes to use in Material UI
-    const classes = useStyles();
-    const theme = useTheme();
+  //Bring in classes and themes to use in Material UI
+  const classes = useStyles();
+  const theme = useTheme();
 
-    /*
+  /*
       The most important part of our application.
   
       Here, we use the 'useActions' hook, this hook returns an array with 3 elements
@@ -85,84 +92,81 @@ export const App = () => {
 
       actorClass: the class of the human actor which this web client will be representing, this is defined in cogment.yaml
     */
-    const [event, startTrial, sendAction] = useActions(
-        cogSettings,
-        "player_1",
-        "player"
-    );
-    
-    
-    //Function to construct the Action which the player will send when they click either rock, paper, or scissors
-    const choose = (move) => {
-        const action = new PlayerAction();
-        action.setMove(move);
-        sendAction(action);
+  const [event, startTrial, sendAction] = useActions(
+    cogSettings,
+    "player_1",
+    "player"
+  );
+
+  //Function to construct the Action which the player will send when they click either rock, paper, or scissors
+  const choose = (move) => {
+    const action = new PlayerAction();
+    action.setMove(move);
+    sendAction(action);
+  };
+
+  //This will start a trial as soon as we're connected to the orchestrator
+  useEffect(() => {
+    if (startTrial) startTrial();
+  }, [startTrial]);
+
+  //Get any observation from the current event, events have observations, messages, and rewards, and all three can be unpacked from the event object
+  //We will also unpack a helpful variable called 'last', this will allow us to know when the trial has ended
+  const { observation, last } = event;
+
+  const [gameState, setGameState] = useState({
+    gameStage: "start",
+    roundIndex: 0,
+    lastMoveComputer: 0,
+    lastMoveHuman: 0,
+  });
+  const [firstObservation, setFirstObservation] = useState(true);
+
+  useEffect(() => {
+    //Parse game state out of the observation
+    //Some events don't contain an observation, so we need to store the observation contents in a state
+    if (!observation) return;
+
+    //The first observation is not useful, as it just contains the default game state, before players have made moves
+    if (firstObservation) {
+      setFirstObservation(false);
+      return;
     }
 
-    //This will start a trial as soon as we're connected to the orchestrator
-    useEffect(() => {
-        if (startTrial) startTrial();
-    }, [startTrial]);
+    //Get all relevant information from the observation
+    const roundIndex = gameState.roundIndex + 1;
+    const gameStage = "playing";
+    const lastMoveComputer = observation.them.lastMove;
+    const lastMoveHuman = observation.me.lastMove;
+    const lastWonComputer = observation.them.wonLast;
+    const lastWonHuman = observation.me.wonLast;
 
-    //Get any observation from the current event, events have observations, messages, and rewards, and all three can be unpacked from the event object
-    //We will also unpack a helpful variable called 'last', this will allow us to know when the trial has ended
-    const { observation, last } = event;
-
-    const [gameState, setGameState] = useState({
-        gameStage: "start",
-        roundIndex: 0,
-        lastMoveComputer: 0,
-        lastMoveHuman: 0,
-    })
-    const [firstObservation, setFirstObservation] = useState(true);
-
-    useEffect(() => {
-        //Parse game state out of the observation
-        //Some events don't contain an observation, so we need to store the observation contents in a state
-        if (!observation) return;
-
-        //The first observation is not useful, as it just contains the default game state, before players have made moves
-        if(firstObservation){
-            setFirstObservation(false);
-            return;
-        }
-
-
-        //Get all relevant information from the observation
-        const roundIndex = gameState.roundIndex + 1;
-        const gameStage = "playing";
-        const lastMoveComputer = observation.them.lastMove
-        const lastMoveHuman = observation.me.lastMove
-        const lastWonComputer = observation.them.wonLast;
-        const lastWonHuman = observation.me.wonLast;
-
-        setGameState({
-            gameStage,
-            roundIndex,
-            lastMoveComputer,
-            lastMoveHuman,
-            lastWonComputer,
-            lastWonHuman
-        })
+    setGameState({
+      gameStage,
+      roundIndex,
+      lastMoveComputer,
+      lastMoveHuman,
+      lastWonComputer,
+      lastWonHuman,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [observation])
+  }, [observation]);
 
-    //If the the value of 'last' changes, see if it is true, and if so set the gameStage to 'end'
-    useEffect(() => {
-        if(!last) return;
+  //If the the value of 'last' changes, see if it is true, and if so set the gameStage to 'end'
+  useEffect(() => {
+    if (!last) return;
 
-        const newGameState = {...gameState};
-        newGameState.gameStage = "end"
+    const newGameState = { ...gameState };
+    newGameState.gameStage = "end";
 
-        setGameState(newGameState)
+    setGameState(newGameState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [last])
+  }, [last]);
 
-
-    //The layout of the page
-    return (
-        <Box>
-            {/* <Typography>Game stage: {gameState.gameStage}</Typography>
+  //The layout of the page
+  return (
+    <Box>
+      {/* <Typography>Game stage: {gameState.gameStage}</Typography>
             <Typography>Human's move: {gameState.gameStage !== "start" && getMoveText(gameState.lastMoveHuman)}</Typography>
             <Typography>Computer's move: {gameState.gameStage !== "start" && getMoveText(gameState.lastMoveComputer)}</Typography>
             <Typography>Did Human win last round? {observation && gameState.lastWonHuman ? "Yes" : "No"}</Typography>
@@ -171,23 +175,24 @@ export const App = () => {
             <Button onClick={() => choose(1)}>Paper</Button>
             <Button onClick={() => choose(2)}>Scissors</Button> */}
 
+      <Header gameState={gameState} />
+      <Container className={classes.container}>
+        <Player
+          color={theme.palette.primary.main}
+          IconClass={PersonIcon}
+          choose={choose}
+          isHuman
+        />
 
-
-            <Header gameState={gameState} />
-            <Container className={classes.container}>
-                <Player
-                    color={theme.palette.primary.main}
-                    IconClass={PersonIcon}
-                    choose={choose}
-                    isHuman
-                />
-
-                <Player
-                    color={theme.palette.secondary.main}
-                    IconClass={ComputerIcon}
-                    selected={gameState.gameStage !== "start" && getMoveText(gameState.lastMoveComputer)}
-                />
-            </Container>
-        </Box>
-    );
+        <Player
+          color={theme.palette.secondary.main}
+          IconClass={ComputerIcon}
+          selected={
+            gameState.gameStage !== "start" &&
+            getMoveText(gameState.lastMoveComputer)
+          }
+        />
+      </Container>
+    </Box>
+  );
 };

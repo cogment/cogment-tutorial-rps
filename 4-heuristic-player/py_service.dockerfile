@@ -6,6 +6,9 @@ WORKDIR /service
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
+COPY cogment.yaml *.proto ./
+RUN python -m cogment.generate
+
 # Copy the rest of the service sources
 COPY . ./
 
