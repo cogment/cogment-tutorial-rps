@@ -4,13 +4,6 @@ import:
 
 commands:
   sync: cogment sync environment client random_agent web-client
-  generate: |
-    cogment run sync
-    pip install cogment[generate]==1.3.0
-    cd environment; python -m cogment.generate; cd ..
-    cd client; python -m cogment.generate; cd ..
-    cd random_agent; python -m cogment.generate; cd ..
-    cd web-client; npm i; npx cogment-js-sdk-generate; cd ..
   build: docker-compose build dashboard metrics orchestrator environment random-agent web-client
   start: docker-compose up dashboard metrics orchestrator environment random-agent web-client
   services: docker-compose up dashboard metrics orchestrator environment random-agent
