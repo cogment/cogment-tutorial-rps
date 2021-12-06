@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@cogment/cogment-js-sdk": "1.26.1",
+    "@cogment/cogment-js-sdk": "file:../../../cogment-js-sdk",
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
     "@testing-library/jest-dom": "^5.11.8",
@@ -11,10 +11,14 @@
     "@testing-library/user-event": "^12.7.3",
     "google-protobuf": "^3.15.2",
     "grpc-tools": "^1.11.2",
+    "jsdoc": "^3.6.7",
+    "protobufjs": "git+https://github.com/protobufjs/protobuf.js.git#d13d5d5688052e366aa2e9169f50dfca376b32cf",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-scripts": "4.0.1",
+    "tmp": "^0.2.1",
     "typescript": "^3.2.1",
+    "uglify-js": "^3.14.4",
     "web-vitals": "^0.2.4"
   },
   "scripts": {

@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { Context } from "@cogment/cogment-js-sdk";
 import { useEffect, useState } from "react";
-import * as cogment from "@cogment/cogment-js-sdk";
 
 export const useActions = (cogSettings, actorName, actorClass) => {
   const [event, setEvent] = useState({
     observation: null,
-    message: null,
-    reward: null,
+    actions: null,
+    messages: null,
+    rewards: null,
+    type: null,
+    last: false
   });
 
   const [startTrial, setStartTrial] = useState(null);
@@ -27,20 +30,17 @@ export const useActions = (cogSettings, actorName, actorClass) => {
 
   //Set up the connection and register the actor only once, regardless of re-rendering
   useEffect(() => {
-    const service = cogment.createService({
+    const context = new Context(
       cogSettings,
-      grpcURL:
-        window.location.protocol + "//" + window.location.hostname + ":8080",
-    });
+      actorName,
+    );
 
-    const actor = { name: actorName, actorClass: actorClass };
-
-    service.registerActor(actor, async (actorSession) => {
+    context.registerActor(async (actorSession) => {
       actorSession.start();
 
       //Double arrow function here beause react will turn a single one into a lazy loaded function
       setSendAction(() => (action) => {
-        actorSession.sendAction(action);
+        actorSession.doAction(action);
       });
 
       for await (const event of actorSession.eventLoop()) {
@@ -48,20 +48,23 @@ export const useActions = (cogSettings, actorName, actorClass) => {
         //TODO: this will eventually be part of the API
         let observationOBJ = event.observation && event.observation.toObject();
         event.observation = observationOBJ;
-        event.last = event.type === 3;
 
-        setEvent(event);
+        const eventUseActions = event;
+
+        eventUseActions.last = event.type === 3;
+
+        setEvent(eventUseActions);
       }
-    });
+    }, actorName, actorClass)
 
-    //Creating the trial controller must happen after actors are registered
-    const trialController = service.createTrialController();
+    const endpoint = window.location.protocol + "//" + window.location.hostname + ":8080"
+    const controller = context.getController(endpoint);
 
     //Need to output a function so that the user can start the trial when all actors are connected
     //Again, double arrow function cause react will turn a single one into a lazy loaded function
     setStartTrial(() => async () => {
-      const { trialId } = await trialController.startTrial(actor.name);
-      await trialController.joinTrial(trialId, actor);
+      const trialId = await controller.startTrial();
+      await context.joinTrial(trialId, endpoint, actorName);
     });
   }, [cogSettings, actorName, actorClass]);
 

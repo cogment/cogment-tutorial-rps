@@ -12,34 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import React, { useEffect, useState } from "react";
-
+import {
+  Box, Container,
+  makeStyles, useTheme
+} from "@material-ui/core";
 //Then some imports for icons and Material UI functionality we'll be using
 import ComputerIcon from "@material-ui/icons/Computer";
 import PersonIcon from "@material-ui/icons/Person";
-import {
-  Box,
-  Button,
-  Container,
-  makeStyles,
-  Typography,
-  useTheme,
-} from "@material-ui/core";
-
-//And here's the important part, we're importing the two things that will allow us to use cogment, first is the 'useActions' hook, this will give us the observations of our human agent, as well as allow us to make actions.
-import { useActions } from "./hooks/useActions";
-
+import React, { useEffect, useState } from "react";
 //Second is our 'cogSettings'. This is a file that was generated when you ran
 //`cogment generate --js_dir=./webclient`
 //This file tells our web client relevant information about our trials, environments, and actor classes
 import { cogSettings } from "./CogSettings";
-
-//These are messages which were defined in data.proto, these imports will need to change whenever their corresponding messages in data.proto are changed, and cogment generate is run.
-import { PlayerAction } from "./data_pb";
-
+import { Header } from "./components/Header";
 //Finally here are two components which we will make later in the tutorial
 import { Player } from "./components/Player";
-import { Header } from "./components/Header";
+//These are messages which were defined in data.proto, these imports will need to change whenever their corresponding messages in data.proto are changed, and cogment generate is run.
+import { rps as PB } from "./data_pb";
+//And here's the important part, we're importing the two things that will allow us to use cogment, first is the 'useActions' hook, this will give us the observations of our human agent, as well as allow us to make actions.
+import { useActions } from "./hooks/useActions";
+
+
+
+
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -100,8 +96,9 @@ export const App = () => {
 
   //Function to construct the Action which the player will send when they click either rock, paper, or scissors
   const choose = (move) => {
-    const action = new PlayerAction();
-    action.setMove(move);
+    const action = new PB.PlayerAction({
+      move
+    });
     sendAction(action);
   };
 
