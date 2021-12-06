@@ -44,11 +44,6 @@ export const useActions = (cogSettings, actorName, actorClass) => {
       });
 
       for await (const event of actorSession.eventLoop()) {
-        //Parse the observation into a regular JS object
-        //TODO: this will eventually be part of the API
-        let observationOBJ = event.observation && event.observation.toObject();
-        event.observation = observationOBJ;
-
         const eventUseActions = event;
 
         eventUseActions.last = event.type === 3;

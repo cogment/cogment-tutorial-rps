@@ -29,7 +29,7 @@ DEFEATS = {
 
 
 async def environment(environment_session):
-    target_game_score = environment_session.config.target_game_score
+    target_game_score = 2
     state = {
         "games_count": 0,
         "p1": {
@@ -96,7 +96,7 @@ async def environment(environment_session):
 
                 print(f"{p2.actor_name} won game #{state['games_count']}")
 
-            if event.type == cogment.EventType.ACTIVE and state["games_count"]<environment_session.config.target_games_count:
+            if event.type == cogment.EventType.ACTIVE and state["games_count"]<5:
                 # The trial is active
                 environment_session.produce_observations(observations)
             else:

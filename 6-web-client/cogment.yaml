@@ -4,10 +4,10 @@ import:
 
 commands:
   sync: cogment sync environment client random_agent web-client
-  build: docker-compose build dashboard metrics orchestrator environment random-agent web-client
-  start: docker-compose up dashboard metrics orchestrator environment random-agent web-client
-  services: docker-compose up dashboard metrics orchestrator environment random-agent
-  stop: docker-compose stop dashboard metrics orchestrator environment random-agent web-client
+  build: docker-compose build dashboard metrics orchestrator environment random-agent grpcwebproxy web-client
+  start: docker-compose up dashboard metrics orchestrator environment random-agent grpcwebproxy web-client
+  services: docker-compose up dashboard metrics orchestrator environment random-agent grpcwebproxy
+  stop: docker-compose stop dashboard metrics orchestrator environment random-agent grpcwebproxy web-client
   tail: docker-compose logs -f
   client: docker-compose run --rm client
 
@@ -29,9 +29,7 @@ actor_classes:
 trial_params:
   environment:
     endpoint: grpc://environment:9000
-    config:
-      target_game_score: 2
-      target_games_count: 5
+    
   actors:
     - name: player_1
       actor_class: player
