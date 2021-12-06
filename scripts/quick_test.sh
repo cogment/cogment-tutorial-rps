@@ -8,7 +8,6 @@ for d in "$ROOT_DIR"/*-*/; do
   (
     cd "$d" || exit
     printf "\n******** TESTING \"%s\" ********\n\n" "$d"
-    cogment run generate
     cogment run build
     cogment run start &
     sleep 20
