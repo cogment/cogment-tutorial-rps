@@ -29,8 +29,7 @@ actor_classes:
 trial_params:
   environment:
     endpoint: grpc://environment:9000
-    config:
-      target_game_score: 2
+    
   actors:
     - name: player_random_agent_1
       actor_class: player

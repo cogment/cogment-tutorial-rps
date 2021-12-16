@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cog_settings
-from data_pb2 import Observation, PlayerState, ROCK, PAPER, SCISSORS
-
-import cogment
-
 import asyncio
+
+import cog_settings
+import cogment
+from data_pb2 import PAPER, ROCK, SCISSORS, Observation, PlayerState
 
 MOVES_STR = ["👊 rock", "✋ paper", "✌️ scissors"]
 
@@ -29,7 +28,7 @@ DEFEATS = {
 
 
 async def environment(environment_session):
-    target_game_score = environment_session.config.target_game_score
+    target_game_score = 2
     state = {
         "games_count": 0,
         "p1": {

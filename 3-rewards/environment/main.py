@@ -29,7 +29,7 @@ DEFEATS = {
 
 
 async def environment(environment_session):
-    target_game_score = environment_session.config.target_game_score
+    target_game_score = 2
     state = {
         "games_count": 0,
         "p1": {
