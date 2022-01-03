@@ -3,7 +3,7 @@ import:
     - data.proto
 
 commands:
-  sync: cogment sync environment client random_agent
+  copy: cogment copy cogment.yaml *.proto environment client random_agent
   build: docker-compose build dashboard metrics orchestrator environment random-agent
   dashboard: docker-compose up --build dashboard
   start: docker-compose up dashboard metrics orchestrator environment random-agent
