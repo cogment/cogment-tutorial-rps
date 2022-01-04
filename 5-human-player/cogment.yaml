@@ -30,9 +30,6 @@ actor_classes:
 trial_params:
   environment:
     endpoint: grpc://environment:9000
-    config:
-      target_game_score: 2
-      target_games_count: 5
   actors:
     - name: player_1
       actor_class: player
