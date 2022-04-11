@@ -16,11 +16,10 @@ syntax = "proto3";
 
 package rps;
 
-message EnvConfig {
+message EnvironmentConfig {
 }
 
 message TrialConfig {
-  EnvConfig env_config = 1;
 }
 
 enum Move {
@@ -31,7 +30,7 @@ enum Move {
 
 message PlayerState {
   bool won_last = 2;
-  Move last_move = 3;
+  optional Move last_move = 3;
 }
 
 message Observation {

@@ -13,11 +13,19 @@
 # limitations under the License.
 
 import cog_settings
-from data_pb2 import PlayerAction, ROCK, PAPER, SCISSORS, TrialConfig
+from data_pb2 import PlayerAction, ROCK, PAPER, SCISSORS, EnvironmentConfig
 
 import cogment
 
 import asyncio
+import datetime
+import os
+
+
+
+ORCHESTRATOR_ENDPOINT = f"grpc://{os.getenv('ORCHESTRATOR_HOST')}:{os.getenv('ORCHESTRATOR_PORT')}"
+ENVIRONMENT_ENDPOINT = f"grpc://{os.getenv('ENVIRONMENT_HOST')}:{os.getenv('ENVIRONMENT_PORT')}"
+RANDOM_AGENT_ENDPOINT = f"grpc://{os.getenv('RANDOM_AGENT_HOST')}:{os.getenv('RANDOM_AGENT_PORT')}"
 
 MOVES = [ROCK, PAPER, SCISSORS]
 MOVES_STR = ["👊 rock", "✋ paper", "✌️ scissors"]
@@ -29,22 +37,23 @@ async def main():
 
     context = cogment.Context(cog_settings=cog_settings, user_id="rps")
 
+    # Defining and registering the human player actor
     async def human_player(actor_session):
         round_index = 0
 
         actor_session.start()
 
         def print_observation(observation):
-            print(f"🧑 played {MOVES_STR[observation.snapshot.me.last_move]}")
-            print(f"🤖 played {MOVES_STR[observation.snapshot.them.last_move]}")
-            if observation.snapshot.me.won_last:
+            print(f"🧑 played {MOVES_STR[observation.observation.me.last_move]}")
+            print(f"🤖 played {MOVES_STR[observation.observation.them.last_move]}")
+            if observation.observation.me.won_last:
                 print(f" -> 🧑 wins round #{round_index + 1}")
-            elif observation.snapshot.them.won_last:
+            elif observation.observation.them.won_last:
                 print(f" -> 🤖 wins the round #{round_index + 1}")
             else:
                 print(f" -> round #{round_index + 1} is a draw")
 
-        async for event in actor_session.event_loop():
+        async for event in actor_session.all_events():
             if event.observation:
                 observation = event.observation
 
@@ -78,21 +87,51 @@ async def main():
         actor_classes=["player"])
 
     # Create a controller
-    controller = context.get_controller(endpoint=cogment.Endpoint("orchestrator:9000"))
+    controller = context.get_controller(endpoint=cogment.Endpoint(ORCHESTRATOR_ENDPOINT))
 
-    # Start a new trial
-    trial_id = await controller.start_trial(trial_config=TrialConfig())
+    # Define 2 actors
+
+    # The first actor is a client actor that will connect through the client
+    actor_1_params = cogment.ActorParameters(
+        cog_settings,
+        name="player_1",
+        class_name="player",
+        endpoint="cogment://client"
+    )
+    actor_2_params = cogment.ActorParameters(
+        cog_settings,
+        name="player_2",
+        class_name="player",
+        endpoint=RANDOM_AGENT_ENDPOINT,
+        implementation="heuristic_agent"
+    )
+
+    # Configure the environment
+    environment_config=EnvironmentConfig(
+        target_score=5
+    )
+
+    # Assemble everything in the trial parameters
+    trial_params=cogment.TrialParameters(
+        cog_settings,
+        environment_name="env",
+        environment_endpoint=ENVIRONMENT_ENDPOINT,
+        environment_config=environment_config,
+        actors=[
+            actor_1_params,
+            actor_2_params,
+        ]
+    )
+
+    # Defining the trial id on the client side
+    trial_id=f"rps-{datetime.datetime.now().isoformat()}"
+
+    # Start a new trial using the trial params we just created
+    trial_id = await controller.start_trial(trial_id_requested=trial_id, trial_params=trial_params)
     print(f"Trial '{trial_id}' started")
 
     # Let the human actor join the trial
-    await context.join_trial(trial_id=trial_id, endpoint=cogment.Endpoint("orchestrator:9000"), impl_name="human")
-    print(f"Human actor joined trial '{trial_id}'")
-
-    # Wait for the trial to end by itself
-    async for trial_info in controller.watch_trials(trial_state_filters=[cogment.TrialState.ENDED]):
-        if trial_info.trial_id == trial_id:
-            break
-
+    await context.join_trial(trial_id=trial_id, endpoint=cogment.Endpoint(ORCHESTRATOR_ENDPOINT), actor_name="player_1")
     print(f"Trial '{trial_id}' ended")
 
 if __name__ == '__main__':

@@ -18,6 +18,9 @@ from data_pb2 import Observation, PlayerState, ROCK, PAPER, SCISSORS
 import cogment
 
 import asyncio
+import os
+
+PORT = os.getenv('ENVIRONMENT_PORT')
 
 MOVES_STR = ["👊 rock", "✋ paper", "✌️ scissors"]
 
@@ -27,18 +30,17 @@ DEFEATS = {
     PAPER: SCISSORS
 }
 
-
 async def environment(environment_session):
     state = {
         "rounds_count": 0,
         "p1": {
-            "won_rounds_count": 0
+            "score": 0
         },
         "p2": {
-            "won_rounds_count": 0
+            "score": 0
         },
     }
-    print("environment starting")
+    print(f"Start trial {environment_session.get_trial_id()}")
     [p1, p2] = environment_session.get_active_actors()
     p1_state = PlayerState(won_last=False, last_move=None)
     p2_state = PlayerState(won_last=False, last_move=None)
@@ -47,7 +49,7 @@ async def environment(environment_session):
         (p2.actor_name, Observation(me=p2_state, them=p1_state)),
     ])
 
-    async for event in environment_session.event_loop():
+    async for event in environment_session.all_events():
         if event.actions:
             [p1_action, p2_action] = [recv_action.action for recv_action in event.actions]
             print(f"{p1.actor_name} played {MOVES_STR[p1_action.move]}")
@@ -64,10 +66,10 @@ async def environment(environment_session):
             )
             state["rounds_count"] += 1
             if p1_state.won_last:
-                state["p1"]["won_rounds_count"] += 1
+                state["p1"]["score"] += 1
                 print(f"{p1.actor_name} wins!")
             elif p2_state.won_last:
-                state["p2"]["won_rounds_count"] += 1
+                state["p2"]["score"] += 1
                 print(f"{p2.actor_name} wins!")
             else:
                 print(f"draw.")
@@ -86,20 +88,20 @@ async def environment(environment_session):
         for message in event.messages:
             print(f"environment received a message from '{message.sender_name}': - '{message.payload}'")
 
-    print("environment end")
+    print(f"Trial {environment_session.get_trial_id()} ended:")
     print(f"\t * {state['rounds_count']} rounds played")
-    print(f"\t * {p1.actor_name} won {state['p1']['won_rounds_count']} rounds")
-    print(f"\t * {p2.actor_name} won {state['p2']['won_rounds_count']} rounds")
-    print(f"\t * {state['rounds_count'] - state['p1']['won_rounds_count'] - state['p2']['won_rounds_count']} draws")
+    print(f"\t * {p1.actor_name} won {state['p1']['score']} rounds")
+    print(f"\t * {p2.actor_name} won {state['p2']['score']} rounds")
+    print(f"\t * {state['rounds_count'] - state['p1']['score'] - state['p2']['score']} draws")
 
 async def main():
-    print("Environment service starting...")
+    print(f"Environment service starting on port {PORT}...")
 
     context = cogment.Context(cog_settings=cog_settings, user_id="rps")
 
     context.register_environment(impl=environment)
 
-    await context.serve_all_registered(cogment.ServedEndpoint(port=9000))
+    await context.serve_all_registered(cogment.ServedEndpoint(port=PORT), prometheus_port=0)
 
 if __name__ == '__main__':
     asyncio.run(main())

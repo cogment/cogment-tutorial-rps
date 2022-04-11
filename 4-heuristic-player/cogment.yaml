@@ -2,17 +2,8 @@ import:
   proto:
     - data.proto
 
-commands:
-  copy: cogment copy cogment.yaml *.proto environment client random_agent
-  build: docker-compose build dashboard metrics orchestrator environment random-agent
-  dashboard: docker-compose up --build dashboard
-  start: docker-compose up dashboard metrics orchestrator environment random-agent
-  stop: docker-compose stop dashboard metrics orchestrator environment random-agent
-  down: docker-compose down
-  client: docker-compose run --rm client
-
 environment:
-  config_type: rps.EnvConfig
+  config_type: rps.EnvironmentConfig
 
 trial:
   config_type: rps.TrialConfig
@@ -24,18 +15,3 @@ actor_classes:
       space: rps.PlayerAction
     observation:
       space: rps.Observation
-
-# Dynamic configuration (could be changed by a pre-hook)
-trial_params:
-  environment:
-    endpoint: grpc://environment:9000
-    
-  actors:
-    - name: player_1
-      actor_class: player
-      implementation: random_agent
-      endpoint: grpc://random-agent:9000
-    - name: player_2
-      actor_class: player
-      implementation: heuristic_agent
-      endpoint: grpc://random-agent:9000

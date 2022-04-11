@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Add `./run.sh` scripts to start the services without relying on Docker.
+
+### Changed
+
+- Show the ability to provide `controller.start_trial` with `trial_params`.
+- Requires cogment v2.2 and cogment-py-sdk v2.1.1
+
 ## v2.0.0 - 2022-01-17
 
 - Updated to API v2.0

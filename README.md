@@ -16,7 +16,12 @@ This repository includes the sources of the different steps of the Cogment RPS t
 
 ## Dependencies
 
-The tutorial requires a working installation of the **Cogment cli** as well as a working **docker** implementation.
+The tutorial requires a Unix environment, it has been tested on Macos, Ubuntu and Windows WSL2, the following need to be available:
+
+- a working installation of **Cogment**,
+- a working installation of GNU **parallel** (which can be installed with, for example, `apt get parallel` or `brew install parallel`),
+- a Python (>=3.7) setup with virtualenv,
+- a Node.JS (>=14) setup (for step 6).
 
 ## Usage
 
@@ -25,27 +30,28 @@ From each of the step's directory you can run the following.
 Run the code generation phase and build the project using
 
 ```
-cogment run generate
-cogment run build
+./run.sh build
 ```
 
 Then launch the environment, agents and orchestrator services:
 
 ```
-cogment run start
+./run.sh services_start
 ```
 
 For steps 1-5 & 7, in a separate terminal, trigger a trial with:
 
 ```
-cogment run client
+./run.sh client_start
 ```
 
-For step 6, you simply have to open localhost:3000 to trigger a trial
+For step 6, in a separate terminal, launch the web client using:
 
-NOTE:
+```
+./run.sh web_client_start
+```
 
-For step 6, you will need Node.js installed onto your computer
+It should open your web browser to <http://localhost:8000> (if not open it manually)
 
 ## Developers
 

@@ -18,16 +18,17 @@ from data_pb2 import Observation
 import cogment
 
 import asyncio
+import os
+
+PORT = os.getenv('ENVIRONMENT_PORT')
 
 async def environment(environment_session):
-    print("environment starting")
-    # Create the initial observaton
-    observation = Observation()
+    print(f"Start trial {environment_session.get_trial_id()}")
 
-    # Start the trial and send that observation to all actors
-    environment_session.start([("*", observation)])
+    # Start the trial and send an initial observation to all actors
+    environment_session.start([("*", Observation())])
 
-    async for event in environment_session.event_loop():
+    async for event in environment_session.all_events():
         if event.actions:
             actions = event.actions
             print(f"environment received the actions")
@@ -46,13 +47,13 @@ async def environment(environment_session):
     print("environment end")
 
 async def main():
-    print("Environment service starting...")
+    print(f"Environment service starting on port {PORT}...")
 
     context = cogment.Context(cog_settings=cog_settings, user_id="rps")
 
     context.register_environment(impl=environment)
 
-    await context.serve_all_registered(cogment.ServedEndpoint(port=9000))
+    await context.serve_all_registered(cogment.ServedEndpoint(port=PORT), prometheus_port=0)
 
 if __name__ == '__main__':
     asyncio.run(main())

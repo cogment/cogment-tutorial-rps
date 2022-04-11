@@ -20,15 +20,17 @@ import numpy as np
 import tensorflow as tf
 
 import asyncio
+import os
 
+PORT = os.getenv('DQN_AGENT_PORT')
 
 # Parameters for DQN
-batch_size = 50  # Size of batch taken from replay buffer
+batch_size = 100 # Size of batch taken from replay buffer
 gamma = 0.99  # Discount factor for future rewards
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
 loss_function = tf.keras.losses.Huber()  # Using huber loss for stability
 target_model_update_interval = (
-    100  # How many samples between each update to the target model
+    200  # How many samples between each update to the target model
 )
 epsilon_min = 0.05  # Minimum exploration rate
 epsilon_max = 1.0  # Maximum exploration rate
@@ -38,6 +40,8 @@ epsilon_decay_per_tick = (
 max_replay_buffer_size = 100000
 
 MOVES = [ROCK, PAPER, SCISSORS]
+NO_LAST_MOVE = len(MOVES)
+LAST_MOVES = [ROCK, PAPER, SCISSORS, NO_LAST_MOVE] # The first round of the game has no information on last move
 actions_count = len(MOVES)
 
 # Create the deep Q-Network
@@ -45,7 +49,9 @@ def create_model():
     in_me_last_move = tf.keras.Input(name="obs_me_last_move", shape=(1))
     in_them_last_move = tf.keras.Input(name="obs_them_last_move", shape=(1))
     one_hot_move = tf.keras.layers.experimental.preprocessing.CategoryEncoding(
-        name="one_hot_move", max_tokens=len(MOVES), output_mode="binary"
+        name="one_hot_move",
+        num_tokens=len(LAST_MOVES),
+        output_mode="binary"
     )
     one_hot_me_last_move = one_hot_move(in_me_last_move)
     one_hot_them_last_move = one_hot_move(in_them_last_move)
@@ -62,10 +68,14 @@ def create_model():
 # Convert a Cogment observation to an input usable with the model
 def model_ins_from_observations(observations):
     return {
-        "obs_me_last_move": np.array([[o.snapshot.me.last_move] for o in observations]),
-        "obs_them_last_move": np.array(
-            [[o.snapshot.them.last_move] for o in observations]
-        ),
+        "obs_me_last_move": np.array([
+            [o.observation.me.last_move if o.observation.me.HasField("last_move") else NO_LAST_MOVE]
+            for o in observations
+        ]),
+        "obs_them_last_move": np.array([
+            [o.observation.them.last_move if o.observation.them.HasField("last_move") else NO_LAST_MOVE]
+            for o in observations
+        ]),
     }
 
 
@@ -119,7 +129,7 @@ def append_trial_replay_buffer(trial_rb):
         assert rb_size == len(_rb[key])
 
     print(
-        f"{trial_rb_size} new samples stored after a trial, now having {rb_size} samples over a total of {_collected_samples_count} collected samples."
+        f"samples_count={_collected_samples_count}"
     )
 
 
@@ -130,6 +140,11 @@ def train():
     rb_size = len(_rb["obs_me_last_move"])
 
     if rb_size >= batch_size:
+        # Printing progress by looking at the wins ratio of the last trials
+        last_trials_wins_count = np.count_nonzero(_rb['reward'][-batch_size:] == 1.0)
+        last_trials_losses_count = np.count_nonzero(_rb['reward'][-batch_size:] == -1.0)
+        print(f"last_trials_wins_ratio={last_trials_wins_count /(last_trials_wins_count + last_trials_losses_count)}")
+
         # Step 1 - Randomly select a batch
         batch_indices = np.random.choice(range(rb_size), size=batch_size)
         batch_rb = create_replay_buffer()
@@ -171,7 +186,6 @@ def train():
 
             ## Compute loss between the target Q values and the estimated Q values
             loss = loss_function(target_q_values, estimated_q_values)
-            print(f"loss={loss.numpy()}")
 
             ## Backpropagation!
             grads = tape.gradient(loss, _model.trainable_variables)
@@ -187,7 +201,7 @@ async def dqn_agent(actor_session):
 
     trial_rb = create_replay_buffer()
 
-    async for event in actor_session.event_loop():
+    async for event in actor_session.all_events():
         if event.observation:
             model_ins = model_ins_from_observations([event.observation])
             if event.type == cogment.EventType.ACTIVE:
@@ -224,24 +238,21 @@ async def dqn_agent(actor_session):
     # Dropping the last row, as it only contains the last observations
     trial_rb["obs_me_last_move"] = trial_rb["obs_me_last_move"][:-1]
     trial_rb["obs_them_last_move"] = trial_rb["obs_them_last_move"][:-1]
+
     append_trial_replay_buffer(trial_rb)
     train()
 
 
 async def main():
-    print("Deep Q Learning agents service up and running.")
+    print(f"Deep Q Learning agent service starting on port {PORT}...")
 
     context = cogment.Context(cog_settings=cog_settings, user_id="rps")
     context.register_actor(
         impl=dqn_agent,
         impl_name="dqn_agent",
-        actor_classes=[
-            "player",
-        ],
-    )
+        actor_classes=["player",])
 
-    await context.serve_all_registered(cogment.ServedEndpoint(port=9000))
+    await context.serve_all_registered(cogment.ServedEndpoint(port=PORT), prometheus_port=0)
 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     asyncio.run(main())

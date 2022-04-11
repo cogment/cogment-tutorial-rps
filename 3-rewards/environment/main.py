@@ -18,6 +18,9 @@ from data_pb2 import Observation, PlayerState, ROCK, PAPER, SCISSORS
 import cogment
 
 import asyncio
+import os
+
+PORT = os.getenv('ENVIRONMENT_PORT')
 
 MOVES_STR = ["👊 rock", "✋ paper", "✌️ scissors"]
 
@@ -27,21 +30,21 @@ DEFEATS = {
     PAPER: SCISSORS
 }
 
-
 async def environment(environment_session):
-    target_game_score = 2
+    # Default target score
+    target_score = 3
+    if environment_session.config is not None and environment_session.config.target_score >= 0:
+        target_score = environment_session.config.target_score
     state = {
-        "games_count": 0,
+        "rounds_count": 0,
         "p1": {
-            "won_games_count": 0,
-            "current_game_score": 0
+            "score": 0
         },
         "p2": {
-            "won_games_count": 0,
-            "current_game_score": 0
+            "score": 0
         },
     }
-    print("environment starting")
+    print(f"Start trial {environment_session.get_trial_id()} - target score is {target_score}")
     [p1, p2] = environment_session.get_active_actors()
     p1_state = PlayerState(won_last=False, last_move=None)
     p2_state = PlayerState(won_last=False, last_move=None)
@@ -50,7 +53,7 @@ async def environment(environment_session):
         (p2.actor_name, Observation(me=p2_state, them=p1_state)),
     ])
 
-    async for event in environment_session.event_loop():
+    async for event in environment_session.all_events():
         if event.actions:
             [p1_action, p2_action] = [recv_action.action for recv_action in event.actions]
 
@@ -63,61 +66,48 @@ async def environment(environment_session):
                 won_last=p2_action.move == DEFEATS[p1_action.move],
                 last_move=p2_action.move
             )
+            state["rounds_count"] += 1
             if p1_state.won_last:
-                state["p1"]["current_game_score"] += 1
+                state["p1"]["score"] += 1
             elif p2_state.won_last:
-                state["p2"]["current_game_score"] += 1
+                state["p2"]["score"] += 1
 
             # Generate and send observations
             observations = [
                 (p1.actor_name, Observation(me=p1_state, them=p2_state)),
                 (p2.actor_name, Observation(me=p2_state, them=p1_state)),
             ]
-            if event.type == cogment.EventType.ACTIVE:
-                # The trial is active
-                environment_session.produce_observations(observations)
-            else:
-                # The trial termination has been requested
-                environment_session.end(observations)
 
-            # Update the game scores
-            if state["p1"]["current_game_score"] >= target_game_score:
-                state["games_count"] += 1
-                state["p1"]["current_game_score"] = 0
-                state["p2"]["current_game_score"] = 0
-                state["p1"]["won_games_count"] += 1
-
+            # Handle end of game
+            if state["p1"]["score"] >= target_score:
                 environment_session.add_reward(value=1, confidence=1, to=[p1.actor_name])
                 environment_session.add_reward(value=-1, confidence=1, to=[p2.actor_name])
 
-                print(f"{p1.actor_name} won game #{state['games_count']}")
-            elif state["p2"]["current_game_score"] >= target_game_score:
-                state["games_count"] += 1
-                state["p1"]["current_game_score"] = 0
-                state["p2"]["current_game_score"] = 0
-                state["p2"]["won_games_count"] += 1
-
+                environment_session.end(observations)
+            elif state["p2"]["score"] >= target_score:
                 environment_session.add_reward(value=-1, confidence=1, to=[p1.actor_name])
                 environment_session.add_reward(value=1, confidence=1, to=[p2.actor_name])
 
-                print(f"{p2.actor_name} won game #{state['games_count']}")
-
+                environment_session.end(observations)
+            else:
+                environment_session.produce_observations(observations)
         for message in event.messages:
             print(f"environment received a message from '{message.sender_name}': - '{message.payload}'")
 
-    print("environment end")
-    print(f"\t * {state['games_count']} games played")
-    print(f"\t * {p1.actor_name} won {state['p1']['won_games_count']} games")
-    print(f"\t * {p2.actor_name} won {state['p2']['won_games_count']} games")
+    print(f"Trial {environment_session.get_trial_id()} ended:")
+    print(f"\t * {state['rounds_count']} rounds played")
+    print(f"\t * {p1.actor_name} won {state['p1']['score']} rounds")
+    print(f"\t * {p2.actor_name} won {state['p2']['score']} rounds")
+    print(f"\t * {state['rounds_count'] - state['p1']['score'] - state['p2']['score']} draws")
 
 async def main():
-    print("Environment service starting...")
+    print(f"Environment service starting on port {PORT}...")
 
     context = cogment.Context(cog_settings=cog_settings, user_id="rps")
 
     context.register_environment(impl=environment)
 
-    await context.serve_all_registered(cogment.ServedEndpoint(port=9000))
+    await context.serve_all_registered(cogment.ServedEndpoint(port=PORT), prometheus_port=0)
 
 if __name__ == '__main__':
     asyncio.run(main())
