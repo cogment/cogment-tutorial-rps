@@ -8,6 +8,7 @@ ignore:
   - "**/*_pb_service.?s"
   - "**/*_pb_service.d.ts"
   - "**/node_modules/**"
+  - "**/.venv/**"
 license:
   CopyrightYear: 2021
   Author: "AI Redefined Inc. <dev+cogment@ai-r.com>"
