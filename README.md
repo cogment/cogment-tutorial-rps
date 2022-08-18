@@ -19,7 +19,6 @@ This repository includes the sources of the different steps of the Cogment RPS t
 The tutorial requires a Unix environment, it has been tested on Macos, Ubuntu and Windows WSL2, the following need to be available:
 
 - a working installation of **Cogment**,
-- a working installation of GNU **parallel** (which can be installed with, for example, `apt get parallel` or `brew install parallel`),
 - a Python (>=3.7) setup with virtualenv,
 - a Node.JS (>=14) setup (for step 6).
 
