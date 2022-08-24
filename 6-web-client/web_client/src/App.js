@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {
-  Box, Container,
-  makeStyles, useTheme
-} from "@material-ui/core";
-//Then some imports for icons and Material UI functionality we'll be using
-import ComputerIcon from "@material-ui/icons/Computer";
-import PersonIcon from "@material-ui/icons/Person";
 import React, { useEffect, useState } from "react";
+import { Box, Container } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { styled } from "@mui/system";
+//Then some imports for icons and Material UI functionality we'll be using
+import ComputerIcon from "@mui/icons-material/Computer";
+import PersonIcon from "@mui/icons-material/Person";
 //Second is our 'cogSettings'. This is a file that was generated when you ran
 //`cogment generate --js_dir=./webclient`
 //This file tells our web client relevant information about our trials, environments, and actor classes
@@ -32,24 +31,11 @@ import { rps as PB } from "./data_pb";
 //And here's the important part, we're importing the two things that will allow us to use cogment, first is the 'useActions' hook, this will give us the observations of our human agent, as well as allow us to make actions.
 import { useActions } from "./hooks/useActions";
 
-
-
-
-
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    backgroundColor: theme.palette.primary.light,
-    width: "100vw",
-    height: "100vh",
-  },
-
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-  },
-}));
+const CustomContainer = styled(Container)({
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+});
 
 function getMoveText(move) {
   switch (move) {
@@ -65,8 +51,7 @@ function getMoveText(move) {
 }
 
 export const App = () => {
-  //Bring in classes and themes to use in Material UI
-  const classes = useStyles();
+  //Bring in themes to use in Material UI
   const theme = useTheme();
 
   /*
@@ -173,7 +158,7 @@ export const App = () => {
             <Button onClick={() => choose(2)}>Scissors</Button> */}
 
       <Header gameState={gameState} />
-      <Container className={classes.container}>
+      <CustomContainer>
         <Player
           color={theme.palette.primary.main}
           IconClass={PersonIcon}
@@ -189,7 +174,7 @@ export const App = () => {
             getMoveText(gameState.lastMoveComputer)
           }
         />
-      </Container>
+      </CustomContainer>
     </Box>
   );
 };

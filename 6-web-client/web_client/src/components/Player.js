@@ -15,29 +15,28 @@
 import React from "react";
 
 //Material UI imports, for style
-import Grid from "@material-ui/core/Grid";
-import { makeStyles } from "@material-ui/core";
+import Grid from "@mui/material/Grid";
+import { styled } from "@mui/system";
+import { SvgIcon } from "@mui/material";
 
 //One last component which we haven't defined yet, don't worry, it's not too big
 import { RPSButton } from "./RPSButton";
 
-const useStyles = makeStyles((theme) => ({
-  icon: {
-    width: "8vw",
-    height: "8vw",
-    paddingRight: "1vw",
-    pointerEvents: "none",
-  },
+const Icon = styled(SvgIcon)({
+  width: '8vw',
+  height: '8vw',
+  paddingRight: '1vw',
+  pointerEvents: 'none',
+});
 
-  choiceButtonContainer: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center ",
-  },
+const ChoiceButtonContainer = styled(Grid)({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+});
 
-  choiceContainer: {
-    margin: theme.spacing(1),
-  },
+const ChoiceContainer = styled(Grid)(({ theme }) => ({
+  margin: theme.spacing(1),
 }));
 
 //This component will recieve some props, which will tell it about the trial state, and whether it's the human, or computer player
@@ -47,46 +46,44 @@ export const Player = ({
   choose,
   selected /*Which option is selected (Only relevant if this is representing the computer)*/,
 }) => {
-  const classes = useStyles({ isHuman });
-
   return (
-    <Grid className={classes.choiceContainer} container>
+    <ChoiceContainer container>
       {/*
           Show for this player, whether they are the human, or the computer
         */}
-      <Grid className={classes.choiceButtonContainer} item xs={3}>
-        <IconClass className={classes.icon} />
-      </Grid>
+      <ChoiceButtonContainer item xs={3}>
+        <Icon><IconClass /></Icon>
+      </ChoiceButtonContainer>
 
       {/*
           The Rock, Paper, and Scissors buttons
         */}
-      <Grid className={classes.choiceButtonContainer} item xs={3}>
+      <ChoiceButtonContainer item xs={3}>
         <RPSButton
           selected={selected === "rock"}
           move="rock"
           onClick={() => choose(0)}
           isHuman={isHuman}
         />
-      </Grid>
+      </ChoiceButtonContainer>
 
-      <Grid className={classes.choiceButtonContainer} item xs={3}>
+      <ChoiceButtonContainer item xs={3}>
         <RPSButton
           selected={selected === "paper"}
           move="paper"
           onClick={() => choose(1)}
           isHuman={isHuman}
         />
-      </Grid>
+      </ChoiceButtonContainer>
 
-      <Grid className={classes.choiceButtonContainer} item xs={3}>
+      <ChoiceButtonContainer item xs={3}>
         <RPSButton
           selected={selected === "scissors"}
           move="scissors"
           onClick={() => choose(2)}
           isHuman={isHuman}
         />
-      </Grid>
-    </Grid>
+      </ChoiceButtonContainer>
+    </ChoiceContainer>
   );
 };

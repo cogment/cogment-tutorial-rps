@@ -15,65 +15,68 @@
 import React from "react";
 
 //Just some imports from Material UI for the styling, as well as some icons that we'll be using
-import { makeStyles, Typography } from "@material-ui/core";
-import ComputerIcon from "@material-ui/icons/Computer";
-import PersonIcon from "@material-ui/icons/Person";
+import { SvgIcon, Typography } from "@mui/material";
+import { styled } from "@mui/system";
+import ComputerIcon from "@mui/icons-material/Computer";
+import PersonIcon from "@mui/icons-material/Person";
 
-const useStyles = makeStyles((theme) => ({
-  banner: {
-    backgroundColor: theme.palette.primary.main,
-    padding: theme.spacing(4),
-    marginBottom: theme.spacing(4),
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-
-  inlineImg: {
-    height: "1em",
-    width: "1em",
-    margin: "0 0.25em",
-    fontSize: "inherit",
-  },
-
-  headerText: {
-    display: "flex",
-    alignItems: "center",
-  },
-
-  spacer: {
-    width: "1em",
-  },
+const Banner = styled('div')(({ theme }) => ({
+  backgroundColor: theme.palette.primary.main,
+  padding: theme.spacing(4),
+  marginBottom: theme.spacing(4),
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'center',
 }));
 
-export const Header = ({ gameState }) => {
-  //Get styles
-  const classes = useStyles();
+const HeaderText = styled(Typography, {
+  variant: 'h1',
+  align:'center',
+})({
+  display: 'flex',
+  alignItems: 'center',
+});
 
+const Spacer = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+});
+
+const InlineImg = styled('img')({
+  width: '15vw',
+  height: '15vw',
+  margin: '0 0.25em',
+});
+
+const InlineIcon = styled(SvgIcon)({
+  width: '15vw',
+  height: '15vw',
+  margin: '0 0.25em',
+  fontSize: 'inherit',
+});
+
+export const Header = ({ gameState }) => {
   //Define icons we will be using, for simple access later in the component
   const rock = (
-    <img
+    <InlineImg
       alt="rock"
-      className={classes.inlineImg}
       src={"images/hand-rock.svg"}
     />
   );
   const paper = (
-    <img
+    <InlineImg
       alt="paper"
-      className={classes.inlineImg}
       src={"images/hand-paper.svg"}
     />
   );
   const scissors = (
-    <img
+    <InlineImg
       alt="scissors"
-      className={classes.inlineImg}
       src={"images/hand-scissors.svg"}
     />
   );
-  const human = <PersonIcon className={classes.inlineImg} />;
-  const computer = <ComputerIcon className={classes.inlineImg} />;
+  const human = <InlineIcon><PersonIcon /></InlineIcon>;
+  const computer = <InlineIcon><ComputerIcon /></InlineIcon>;
 
   //Simple function to go from enum to an image, this is the similar to the function in App.js that did something similar
   function getMoveImg(move) {
@@ -90,32 +93,31 @@ export const Header = ({ gameState }) => {
   }
 
   return (
-    <div className={classes.banner}>
+    <Banner>
       {/*
           Show different information based on game state
           For the first option, if the game stage is just starting, tell the human to chose rock, paper, or scissors
         */}
       {gameState.gameStage === "start" && (
-        <Typography variant="h1" align="center" className={classes.headerText}>
+        <HeaderText>
           Pick{rock},{paper}, or{scissors}
-        </Typography>
+        </HeaderText>
       )}
 
       {/*
           If the game stage is in the middle of playing, let the human know what the result of the last round was
         */}
       {gameState.gameStage === "playing" && (
-        <Typography variant="h1" align="center" className={classes.headerText}>
+        <HeaderText>
           {/*
               Show what each player chose as their action
             */}
-          {human}
-          {getMoveImg(gameState.lastMoveHuman)}
-          <div className={classes.spacer} />
+            {human}
+            {getMoveImg(gameState.lastMoveHuman)}
+          <Spacer />
           {computer}
           {getMoveImg(gameState.lastMoveComputer)}
-          <div className={classes.spacer} />
-
+          <Spacer />
           {/*
               Show the result of each player choosing the aformentioned actions, either the human wins the round, computer wins the round, or it's a tie
             */}
@@ -128,16 +130,16 @@ export const Header = ({ gameState }) => {
           {!gameState.lastWonHuman && gameState.lastWonComputer && (
             <>{computer}Won!</>
           )}
-        </Typography>
+        </HeaderText>
       )}
       {/*
           If the game stage is end, tell the player
         */}
       {gameState.gameStage === "end" && (
-        <Typography variant="h1" align="center" className={classes.headerText}>
+        <HeaderText>
           Game Done!
-        </Typography>
+        </HeaderText>
       )}
-    </div>
+    </Banner>
   );
 };
