@@ -1,0 +1,2 @@
+cogment[generate]==2.3.0
+tensorflow~=2.3

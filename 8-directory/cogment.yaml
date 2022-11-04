@@ -1,0 +1,17 @@
+import:
+  proto:
+    - data.proto
+
+environment:
+  config_type: rps.EnvironmentConfig
+
+trial:
+  config_type: rps.TrialConfig
+
+# Static configuration
+actor_classes:
+  - name: player
+    action:
+      space: rps.PlayerAction
+    observation:
+      space: rps.Observation
