@@ -26,7 +26,7 @@ function _py_build() {
   directory=$1
   cp "${ROOT_DIR}/data.proto" "${ROOT_DIR}/cogment.yaml" "${ROOT_DIR}/${directory}"
   cd "${ROOT_DIR}/${directory}"
-  virtualenv -p python3 .venv
+  python -m venv .venv
   # shellcheck disable=SC1091
   source .venv/bin/activate
   pip install -r requirements.txt
@@ -59,7 +59,6 @@ function commands() {
     fi
   done
 }
-
 
 ### PROJECT SPECIFIC PUBLIC COMMANDS ###
 
