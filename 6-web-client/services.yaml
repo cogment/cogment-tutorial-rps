@@ -2,7 +2,7 @@ launch_python: &py_launch
   - [".venv/bin/python", "-m", "main"]
 
 # When used in "cogment launch services.yaml",
-# these scripts will run in parallel, all stopping as 
+# these scripts will run in parallel, all stopping as
 # soon as any of them terminates.
 scripts:
   orchestrator:
@@ -10,13 +10,13 @@ scripts:
       COGMENT_ORCHESTRATOR_ACTOR_PORT: "{{.ORCHESTRATOR_PORT}}"
       COGMENT_WEB_PROXY_PORT: "{{.ORCHESTRATOR_HTTP_PORT}}"
       COGMENT_DEFAULT_PARAMS_FILE: ./params.yaml
-      commands:
+    commands:
       - ["cogment", "services", "orchestrator"]
-  
+
   environment:
     dir: "environment"
     commands: *py_launch
-  
+
   random_agent:
     dir: "random_agent"
     commands: *py_launch
