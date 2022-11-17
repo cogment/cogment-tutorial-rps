@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Add a step 8 showcasing the directory.
+
+### Changed
+
+- Leveraging `cogment launch`
+- Upgrade to React 18
+
 ## v2.1.0 - 2022-04-12
 
 ### Added
