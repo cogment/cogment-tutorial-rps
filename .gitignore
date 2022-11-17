@@ -6,6 +6,9 @@ cog_settings.py
 */cogment.yaml
 */data.proto
 
+# Virtual environments
+.venv
+
 # Metrics
 **/metrics/data
 
