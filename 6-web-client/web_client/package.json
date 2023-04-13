@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@cogment/cogment-js-sdk": "^2.0.2",
+    "@cogment/cogment-js-sdk": "^2.0.8",
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
     "@mui/icons-material": "^5.8.4",
@@ -12,13 +12,14 @@
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
     "jsdoc": "^3.6.11",
-    "protobufjs": "github:protobufjs/protobuf.js#d13d5d5688052e366aa2e9169f50dfca376b32cf",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "tmp": "^0.2.1",
     "uglify-js": "^3.17.4",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "protobufjs": "^7.2.0",
+    "protobufjs-cli": "^1.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
