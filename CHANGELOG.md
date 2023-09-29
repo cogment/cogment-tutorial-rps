@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## v2.3.0 - 2023-09-29
+
 ### Added
 
 - Separated content into `basic_tutorial_steps` and `advanced_tutorial_steps`
