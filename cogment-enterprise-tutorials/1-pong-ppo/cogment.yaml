@@ -1,0 +1,17 @@
+import:
+  proto:
+    - data.proto
+
+environment:
+  config_type: pong.EnvironmentConfig
+
+trial:
+  config_type: pong.TrialConfig
+
+actor_classes:
+  - name: player
+    action:
+      space: pong.Action
+    observation:
+      space: pong.Observation
+    config_type: pong.AgentConfig

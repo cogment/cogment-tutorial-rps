@@ -9,11 +9,11 @@ cog_settings.py
 # Virtual environments
 .venv
 
-# Metrics
-**/metrics/data
+# Cogment data directories
+.cogment
 
-# Js sdk
-web-client
+# Cogment enterprise packages
+cogment-enterprise-*.tar.gz
 
 # Backup of "sed-ed" files
 *.bak

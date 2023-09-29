@@ -1,10 +1,12 @@
-# Cogment "Rock Paper Scissors" (RPS) tutorial
+# Cogment Tutorials
 
 [Cogment](https://cogment.ai) is an innovative open source AI platform designed to leverage the advent of AI to benefit humankind through human-AI collaboration developed by [AI Redefined](https://ai-r.com). Cogment enables AI researchers and engineers to build, train and operate AI agents in simulated or real environments shared with humans. For the full user documentation visit <https://docs.cogment.ai>
 
-This repository includes the sources of the different steps of the Cogment RPS tutorial, detailed instructions are available at [docs.cogment.ai](https://docs.cogment.ai/cogment/tutorial/introduction/).
+This repository includes sources for the different core Cogment tutorials.
 
-## The steps
+## "Rock Paper Scissors" (RPS) tutorial
+
+The RPS tutorial uses the simple game "Rock Paper Scissors" as the context for creating a simple Cogment application from scratch. Detailed instructions are available at [docs.cogment.ai](https://docs.cogment.ai/cogment/tutorial/introduction/).
 
 - [Step 1: Bootstrap the RPS project and define observation & action space data structures](./1-bootstrap-and-data-structures)
 - [Step 2: Implement a first actor and environment](./2-random-player)
@@ -14,7 +16,7 @@ This repository includes the sources of the different steps of the Cogment RPS t
 - [Step 6: Implement a web client for the human player](./6-web-client)
 - [Step 7: Add a player trained with Reinforcement Learning using DQN](./7-dqn-player)
 
-## Dependencies
+### Dependencies
 
 The tutorial requires a Unix environment, it has been tested on Macos, Ubuntu and Windows WSL2, the following need to be available:
 
@@ -22,7 +24,7 @@ The tutorial requires a Unix environment, it has been tested on Macos, Ubuntu an
 - a Python (>=3.7) setup with virtualenv,
 - a Node.JS (>=14) setup (for step 6).
 
-## Usage
+### Usage
 
 From each of the step's directory you can run the following.
 
@@ -51,6 +53,12 @@ For step 6, in a separate terminal, launch the web client using:
 ```
 
 It should open your web browser to <http://localhost:8000> (if not open it manually)
+
+## Cogment enterprise tutorial
+
+Cogment Enterprise is the enterprise version of Cogment, it consists of proprietary modules on top of Cogment open source.
+
+- [Pong PPO: reference implementation of a distributed decentralized execution / centralized training reinforcement training loop using Petting Zoo's Pong environment](./cogment-enterprise-tutorials/1-pong-ppo/)
 
 ## Developers
 

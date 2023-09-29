@@ -1,0 +1,52 @@
+# Copyright 2023 AI Redefined Inc. <dev+cogment@ai-r.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+FROM ubuntu:20.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y \
+  python3.9 \
+  cmake \
+  python3-opencv \
+  python3-pip \
+  protobuf-compiler \
+  curl \
+  vim
+
+WORKDIR /app
+ENV PYTHONPATH /app
+
+# Install cogment
+ARG COGMENT_VERSION="2.18.0"
+COPY --from=cogment/cogment:v${COGMENT_VERSION} /usr/local/bin/cogment /usr/local/bin/
+RUN cogment version
+
+# Cogment Enterprise
+ARG COGMENT_ENTERPRISE_PY_SDK_VERSION="0.4.0"
+COPY cogment-enterprise-${COGMENT_ENTERPRISE_PY_SDK_VERSION}.tar.gz .
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt ${COGMENT_ENTERPRISE_PY_SDK_ARCHIVE} --timeout 5000
+
+RUN AutoROM --accept-license
+
+ADD cogment.yaml .
+ADD *.proto ./
+RUN python3 -m cogment.generate --spec=cogment.yaml --output=cog_settings.py
+
+ADD *.py ./
+ADD *.yaml ./
+ADD *.sh ./
+
+ENTRYPOINT ["cogment", "launch", "-qq", "./launch.yaml"]
+

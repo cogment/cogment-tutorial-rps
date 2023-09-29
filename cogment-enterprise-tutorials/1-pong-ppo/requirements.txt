@@ -1,0 +1,11 @@
+torch==2.0.1
+autorom[accept-rom-license]==0.6.1
+pettingzoo[atari]==1.18.1
+numpy==1.21.6
+supersuit==3.4.0
+fire==0.5.0
+gym==0.23.1
+cogment[generate]==2.8.2
+
+# Dev tooling
+black==22.3.0

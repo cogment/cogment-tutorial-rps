@@ -1,0 +1,91 @@
+global:
+  environment:
+    # --- Project variables ---
+    DIR_PORT: 9000
+
+    # --- Cogment variables ---
+    COGMENT_LOG_LEVEL: warning
+    COGMENT_ENTERPRISE_LOG_LEVEL: warning
+    COGMENT_DIRECTORY_ENDPOINT: "grpc://localhost:{{.DIR_PORT}}"
+    COGMENT_DATA_DIR: ".cogment"
+
+scripts:
+  directory:
+    environment:
+      COGMENT_DIRECTORY_PORT: "{{.DIR_PORT}}"
+      COGMENT_DIRECTORY_REGISTRATION_LAG: 5
+      COGMENT_LOG_LEVEL: info # Requires at least "info" to get the ready_output
+      COGMENT_DIRECTORY_PERSISTENCE_FILE: ""
+    commands:
+      - ["cogment", "services", "directory"]
+    ready_output: 'Listening \[port:{{.DIR_PORT}}\]'
+
+  orchestrator:
+    depends_on:
+      - directory
+    environment:
+      COGMENT_LIFECYCLE_PORT: 0
+      COGMENT_ACTOR_PORT: 0
+      COGMENT_ORCHESTRATOR_PROMETHEUS_PORT: 0
+      COGMENT_LOG_LEVEL: info # Requires at least "info" to get the ready_output
+      COGMENT_ORCHESTRATOR_DIRECTORY_REGISTRATION_HOST: localhost
+    commands:
+      - ["cogment", "services", "orchestrator"]
+    ready_output: "Trial Lifecycle service active"
+
+  datastore:
+    depends_on:
+      - directory
+    environment:
+      COGMENT_TRIAL_DATASTORE_DIRECTORY_REGISTRATION_PROPERTIES: "type=datastore,bench"
+      COGMENT_TRIAL_DATASTORE_PORT: 0
+      COGMENT_TRIAL_DATASTORE_FILE_STORAGE_PATH: "{{.COGMENT_DATA_DIR}}/datastore.db"
+      COGMENT_TRIAL_DATASTORE_DIRECTORY_REGISTRATION_HOST: localhost
+    commands:
+      - ["mkdir", "-p", "{{.COGMENT_DATA_DIR}}"]
+      - ["cogment", "services", "trial_datastore"]
+
+  model_registry:
+    depends_on:
+      - directory
+    environment:
+      COGMENT_MODEL_REGISTRY_ARCHIVE_DIR: "{{.COGMENT_DATA_DIR}}/models"
+      COGMENT_MODEL_REGISTRY_PORT: 0
+      COGMENT_MODEL_REGISTRY_VERSION_CACHE_MAX_ITEMS: 100
+      COGMENT_MODEL_REGISTRY_DIRECTORY_REGISTRATION_HOST: localhost
+    commands:
+      - ["mkdir", "-p", "{{.COGMENT_MODEL_REGISTRY_ARCHIVE_DIR}}"]
+      - ["cogment", "services", "model_registry"]
+
+  environment:
+    depends_on:
+      - directory
+    commands:
+      - ["python3", "environment.py"]
+
+  rl_actor:
+    depends_on:
+      - directory
+    environment:
+      #TORCH_DEVICE_STRING: "cuda:0"
+      TORCH_DEVICE_STRING: "cpu"
+    commands:
+      - ["python3", "rl_actor.py"]
+
+  runner:
+    depends_on:
+      - directory
+      - orchestrator
+    environment:
+      #TORCH_DEVICE_STRING: "cuda:1"
+      TORCH_DEVICE_STRING: "cpu"
+    commands:
+      - [
+          "python3",
+          "runner.py",
+          "{{.__1}}",
+          "{{.__2}}",
+          "{{.__3}}",
+          "{{.__4}}",
+          "{{.__5}}",
+        ]
