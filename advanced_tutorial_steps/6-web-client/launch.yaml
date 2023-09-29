@@ -1,0 +1,16 @@
+scripts:
+  orchestrator:
+    environment:
+      COGMENT_ORCHESTRATOR_ACTOR_PORT: "{{.ORCHESTRATOR_PORT}}"
+      COGMENT_WEB_PROXY_PORT: "{{.ORCHESTRATOR_HTTP_PORT}}"
+      COGMENT_DEFAULT_PARAMS_FILE: ./params.yaml
+    commands:
+      - ["cogment", "services", "orchestrator"]
+
+  environment:
+    commands:
+      - ["python3", "-m", "environment.main"]
+
+  actors:
+    commands:
+      - ["python3", "-m", "actors.main"]

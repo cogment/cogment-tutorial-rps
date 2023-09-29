@@ -8,19 +8,27 @@ This repository includes sources for the different core Cogment tutorials.
 
 The RPS tutorial uses the simple game "Rock Paper Scissors" as the context for creating a simple Cogment application from scratch. Detailed instructions are available at [docs.cogment.ai](https://docs.cogment.ai/cogment/tutorial/introduction/).
 
-- [Step 1: Bootstrap the RPS project and define observation & action space data structures](./1-bootstrap-and-data-structures)
-- [Step 2: Implement a first actor and environment](./2-random-player)
-- [Step 3: Send & receive rewards](./3-rewards)
-- [Step 4: Add a second actor implementation based on a heuristic](./4-heuristic-player)
-- [Step 5: Add a human player in the loop](./5-human-player)
-- [Step 6: Implement a web client for the human player](./6-web-client)
-- [Step 7: Add a player trained with Reinforcement Learning using DQN](./7-dqn-player)
+#### Basic Tutorials
+
+Basic tutorials go over the key elements of a Cogment application and how they interact
+
+- [Step 1: Download and Run an Empty Cogment App for RPS](./basic_tutorial_steps/1-setup/)
+- [Step 2: Enable Actors to Send Actions to the Environment](./basic_tutorial_steps/2-random-player/)
+- [Step 3: Enable the Environment to Send Observations to the Actors](./basic_tutorial_steps/3-environment/)
+- [Step 4: Modify One Actor's Implementation](./basic_tutorial_steps/4-decision-making/)
+
+### Advanced Tutorials
+
+Advanced tutorials build on fundamental concepts in the basic tutorials to explore more of Cogment's capabilities
+
+- [Step 5: Add a human player in the loop](./advanced_tutorial_steps/5-human-player/)
+- [Step 6: Implement a web client for the human player](./advanced_tutorial_steps/6-web-client/)
+- [Step 7: Improve operational efficiency with the Cogment Directory](./advanced_tutorial_steps/7-directory/)
 
 ### Dependencies
 
 The tutorial requires a Unix environment, it has been tested on Macos, Ubuntu and Windows WSL2, the following need to be available:
 
-- a working installation of **Cogment**,
 - a Python (>=3.7) setup with virtualenv,
 - a Node.JS (>=14) setup (for step 6).
 
@@ -28,10 +36,10 @@ The tutorial requires a Unix environment, it has been tested on Macos, Ubuntu an
 
 From each of the step's directory you can run the following.
 
-Run the code generation phase and build the project using
+Install dependencies, run the code generation phase and build the project using
 
 ```
-./run.sh build
+./run.sh install
 ```
 
 Then launch the environment, agents and orchestrator services:
@@ -43,7 +51,7 @@ Then launch the environment, agents and orchestrator services:
 For steps 1-5 & 7, in a separate terminal, trigger a trial with:
 
 ```
-./run.sh client_start
+./run.sh trial_runner_start
 ```
 
 For step 6, in a separate terminal, launch the web client using:

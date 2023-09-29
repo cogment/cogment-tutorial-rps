@@ -1,0 +1,14 @@
+scripts:
+  orchestrator:
+    environment:
+      COGMENT_ORCHESTRATOR_ACTOR_PORT: "{{.ORCHESTRATOR_PORT}}"
+    commands:
+      - ["cogment", "services", "orchestrator"]
+
+  environment:
+    commands:
+      - ["python3", "-m", "environment.main"]
+
+  actors:
+    commands:
+      - ["python3", "-m", "actors.main"]

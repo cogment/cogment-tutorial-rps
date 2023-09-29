@@ -7,9 +7,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Separated content into `basic_tutorial_steps` and `advanced_tutorial_steps`
+- Introduce reference implementation of a learning agent with cogment enterprise in `cogment-enterprise-tutorials`
+
 ### Changed
 
+- Modified content of steps 1-4 of previous tutorials to present concepts in a different order.
+- `run.sh` processes changed
+  - install Cogment in virtual environment to reflect more up-to-date method for Cogment application implementation
+  - changed `build` to `install`
 - Upgrade Cogment js SDK to `2.0.8`
+
+### Removed
+
+- Implementing a learning agent with DQN -- does not use an up-to-date Cogment training loop.
 
 ## v2.2.0 - 2022-11-17
 

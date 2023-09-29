@@ -1,0 +1,12 @@
+trial_params:
+  environment:
+    endpoint: grpc://localhost:9001
+
+  actors:
+    - name: player_1
+      actor_class: player
+      endpoint: cogment://runner
+    - name: player_2
+      actor_class: player
+      implementation: heuristic_agent
+      endpoint: grpc://localhost:9002

@@ -1,0 +1,25 @@
+# This is the configuration file which is used to define the details of how trials are put together
+# More details can be found at https://cogment.ai/docs/reference/cogment-yaml
+
+# rps.SomeAttribute refers to the protobuf message defined by SomeAttribute in the data.proto file
+
+
+import:  # specifies external data structures that is referenced in other parts of the file
+  proto:
+    - data.proto  # defines the data structures exchanged between the various components
+
+
+trial:  # defines properties related to the trial and trial management
+  config_type: rps.TrialConfig
+
+
+environment:  # defines properties related to the environment
+  config_type: rps.EnvironmentConfig
+
+
+actor_classes:  # describes the types of actors that can be present in the project's trials
+  - name: player
+    action:
+      space: rps.PlayerAction  # specifies what kind of actions actors are allowed to take
+    observation:
+      space: rps.Observation   # specifies what kind of information the actor receives
